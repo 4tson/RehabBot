@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 public class ServicesShop implements IChannel {
 	@Override
 	public void processMessage(GuildMessageReceivedEvent event) {
-		String messageContent = event.getMessage().getContentDisplay();
+		String messageContent = event.getMessage().getContentRaw();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();
 			User author = event.getAuthor();
@@ -27,7 +27,7 @@ public class ServicesShop implements IChannel {
 					if(splitContent.length==2 && StringUtils.isNumeric(splitContent[1])) {
 						event.getChannel().sendMessage(MessageUtils.announcePredSale(ServicesUtils.buyPredeterminedService(Integer.parseInt(splitContent[1]),author.getIdLong()),author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 					}else {
-						channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 					}
 				break;
 				default:
@@ -36,7 +36,7 @@ public class ServicesShop implements IChannel {
 				}
 			}else {
 				event.getMessage().delete().queue();
-				channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+				channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 			}
 		}else {
 			event.getMessage().delete().queue();

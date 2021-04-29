@@ -49,7 +49,7 @@ public class BotCommands implements IChannel{
 					}
 				}else {
 					event.getMessage().delete().queue();
-					channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+					channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 				}
 			}else {
 				event.getMessage().delete().queue();
@@ -60,7 +60,6 @@ public class BotCommands implements IChannel{
 	public static void commonCommands(ChannelsEnum channelEnum,RehabCommandsEnum commandEnum, GuildMessageReceivedEvent event) {
 		MessageChannel channel = event.getChannel();
 		User author = event.getAuthor();
-		String messageContent = event.getMessage().getContentDisplay();
 		switch(commandEnum) {
 		case COMMANDS:
 			channel.sendMessage(MessageUtils.getAvailableRehabCommands(channelEnum)).queue();
@@ -87,7 +86,7 @@ public class BotCommands implements IChannel{
 			break;
 		default:
 			event.getMessage().delete().queue();
-			channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+			channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 			break;	
 		}
 	}

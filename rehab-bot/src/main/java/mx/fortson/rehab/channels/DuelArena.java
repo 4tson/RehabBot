@@ -42,7 +42,7 @@ public class DuelArena implements IChannel{
 				}
 			}else {
 				event.getMessage().delete().queue();
-				channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+				channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 			}
 		}else {
 			event.getMessage().delete().queue();
@@ -68,7 +68,7 @@ public class DuelArena implements IChannel{
 				return;
 			}
 		}
-		channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+		channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 	}
 
 	private void resolveDuel(GuildMessageReceivedEvent event) {
@@ -107,7 +107,7 @@ public class DuelArena implements IChannel{
 			}
 		}
 		
-		channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+		channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 	}
 
 }

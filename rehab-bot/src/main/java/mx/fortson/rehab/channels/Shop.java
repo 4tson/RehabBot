@@ -22,7 +22,7 @@ public class Shop implements IChannel{
 	@SuppressWarnings("unchecked")
 	public void processMessage(GuildMessageReceivedEvent event) {
 		Role shopperRole = RehabBot.getOrCreateRole("shopper");
-		String messageContent = event.getMessage().getContentDisplay();
+		String messageContent = event.getMessage().getContentRaw();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();
 			User author = event.getAuthor();
@@ -34,7 +34,7 @@ public class Shop implements IChannel{
 					if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
 						channel.sendMessage(MessageUtils.getTransactionResult(ShopUtils.transaction(messageContent.split(" ")[1],author.getIdLong(),false))).allowedMentions(new ArrayList<>()).queue();
 					}else {
-						channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 					}
 					break;
 				case SELLSHOP:
@@ -44,24 +44,24 @@ public class Shop implements IChannel{
 						}else if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && StringUtils.isNumeric(contentSplit[2])) {
 							channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],contentSplit[2],author.getIdLong(),false),"",shopperRole.getIdLong())).queue();
 						}else {
-							channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+							channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 						}
 					}else{
-						channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 					}
 					break;
 				case BUY_SERVICE:
 					if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
 						channel.sendMessage(MessageUtils.getTransactionResult(ShopUtils.transaction(messageContent.split(" ")[1],author.getIdLong(),true))).allowedMentions(new ArrayList<>()).queue();
 					}else {
-						channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 					}
 					break;
 				case SELLSERVICE:
 					if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && StringUtils.isNumeric(contentSplit[2])) {
 						channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],contentSplit[2],author.getIdLong(),true),"",shopperRole.getIdLong())).queue();
 					}else {
-						channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 					}
 					break;
 				case SHOPAVAIL:
@@ -76,7 +76,7 @@ public class Shop implements IChannel{
 					if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
 						channel.sendMessage(MessageUtils.announceSaleCancel(ShopUtils.cancelSale(contentSplit[1],author.getIdLong()),author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 					}else {
-						channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 					}
 					break;
 				case ADDROLESHOP:
@@ -93,7 +93,7 @@ public class Shop implements IChannel{
 				}
 			}else {
 				event.getMessage().delete().queue();
-				channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+				channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 			}
 		}else {
 			event.getMessage().delete().queue();

@@ -24,7 +24,7 @@ public class Services implements IChannel {
 	
 	@Override
 	public void processMessage(GuildMessageReceivedEvent event) {
-		String messageContent = event.getMessage().getContentDisplay();
+		String messageContent = event.getMessage().getContentRaw();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();
 			User author = event.getAuthor();
@@ -48,7 +48,7 @@ public class Services implements IChannel {
 							break;
 						}
 					}	
-					channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+					channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 					break;
 				case SERVICESTATUS:
 					break;
@@ -58,7 +58,7 @@ public class Services implements IChannel {
 				}
 			}else {
 				event.getMessage().delete().queue();
-				channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+				channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 			}
 		}else {
 			event.getMessage().delete().queue();
