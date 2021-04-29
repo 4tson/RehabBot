@@ -12,6 +12,7 @@ import mx.fortson.rehab.bean.BiddableServiceBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
 import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.constants.RehabBotConstants;
+import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.listeners.ServiceListener;
 import mx.fortson.rehab.listeners.ServiceStateMachine;
 import mx.fortson.rehab.tasks.KillServiceTask;
@@ -22,9 +23,9 @@ public class ServicesUtils {
 	
 	public static void createNewService() {
 		BiddableServiceBean biddableService = new BiddableServiceBean();
-		TextChannel servicesChannel = RehabBot.getApi().getTextChannelsByName("services",true).get(0);
+		TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
 		servicesChannel.getManager().setSlowmode(0).queue();
-		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getApi().getRolesByName("services", true).get(0).getIdLong())).queue();
+		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getOrCreateRole("services").getIdLong())).queue();
 		RehabBot.getApi().addEventListener(new ServiceStateMachine(biddableService));
 	}
 

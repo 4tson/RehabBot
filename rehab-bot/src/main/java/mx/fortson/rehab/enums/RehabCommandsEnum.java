@@ -1,90 +1,63 @@
 package mx.fortson.rehab.enums;
 
-import mx.fortson.rehab.utils.FormattingUtils;
-
 public enum RehabCommandsEnum {
 
-	COMMANDS("!commands","Wait, really?", true),
+	COMMANDS("!commands","Wait, really?",ChannelsEnum.ALL, true),
 	
-	REGISTER("!degen","Allows you to use the other commands from this bot.", true),
+	INVENTORY("!inv","Allows you to take a peek into your inventory.",ChannelsEnum.ALL, true),
+	
+	FUNDS("!bank","Displays your current bank value.",ChannelsEnum.ALL, true),
+	
+	REGISTERDEGEN("!degen","Registers you as a degen. Degens have access to all features of the bot.",ChannelsEnum.BOTCOMMANDS, true),
+	
+	REGISTERIRON("!ironman","Registers you as an ironman. Ironmen have limited access to the bot's features.",ChannelsEnum.BOTCOMMANDS, true),
 	
 	DUEL("!duel [@mention] [amount]","Begins a duel, if you don't mention a person to duel you will stake a random from the arena. "
-							+ "Can only duel with available funds. If no amount is defined, a random amount will be staked from the available funds.", true),
+							+ "Can only duel with available funds. If no amount is defined, a random amount will be staked from the available funds.",ChannelsEnum.DUELARENA, true),
 	
-	DUELRANDO("!duel","ThisShouldntBeShown",false),
+	CHUCK("!chuck","Also known as `!duel allin`, starts a duel with all your available funds",ChannelsEnum.DUELARENA,true),	
+
+	GIFTCHUCK("!giftchuck [@mention] [amount]", "Allows you to give a gift chuck, it is a duel but the winnings to to the person mentioned, the person doing the command take the loss though.",ChannelsEnum.DUELARENA,true),
 	
-	DUELSETAMOUNT("!duel [amount]","AlsoNotShown",false),
+	FARM("!farm [x]","Allows you to go on an adventure with a chance at winning big. Optionally define how many farms you want to execute (max 15)",ChannelsEnum.FARMS, true),
 	
-	FUNDS("!bank","Displays your current bank value.", true),
+	LDRBOARD("!leaderboard", "Shows you a list of all current degens and their bank values",ChannelsEnum.BOTCOMMANDS, true),
 	
-	FARM("!farm [x]","Allows you to get a random amount of GP. Limit 3 per day! Optionally define how many farms you want to execute (max 15)", true),
+	ADDSERVICES("!addrole","Adds the services role, this means you will get pinged when a new service is up for bid.",ChannelsEnum.SERVICES, true),
 	
-	INVENTORY("!inv","Allows you to take a peek into your inventory.", true),
+	REMSERVICES("!remrole","Removes the services role, this means you wont get pinged when a new service is up for bid.",ChannelsEnum.SERVICES, true),
 	
-	LDRBOARD("!leaderboard", "Shows you a list of all current degens and their bank values", true),
+	SERVICESTATUS("!status","Gets the remaining time for the active status if there is one.",ChannelsEnum.BIDSERVICE, true),
 	
-	GIFTCHUCK("!giftchuck [@mention] [amount]", "Allows you to give a gift chuck, it is a duel but the winnings to to the person mentioned, the person doing the command take the loss though.",true),
+	BIDSERVICE("!bid [amount]", "Bids an amount of GP for the current service.",ChannelsEnum.BIDSERVICE, true),
 	
-	CHUCK("!chuck","Also known as `!duel allin`, starts a duel with all your available funds",true),
-	
-	ACCEPT("!accept","",false),
-	
-	ACTIVATESERVICE("!activate [id]","Allows you to activate a service based on its ID",true),
-	
-	NON_EXISTANT("","",false),
+	ACTIVATESERVICE("!activate [id]","Allows you to activate a service based on its ID",ChannelsEnum.SERVICES,true),
 	;
 	
 	
 	String command;
 	String description;
 	boolean active;
+	ChannelsEnum channel;
 	
-	private RehabCommandsEnum(String command, String description, boolean active) {
+	private RehabCommandsEnum(String command, String description, ChannelsEnum channel,boolean active) {
 		this.command = command;
 		this.description = description;
 		this.active = active;
+		this.channel = channel;
 	}
 	
-	public static RehabCommandsEnum fromCommand(String command) {
-		//Checking for duel command
+	public static RehabCommandsEnum fromCommand(String command, ChannelsEnum channel) {
 		String[] splitCommand = command.split(" ");
-		if(splitCommand.length==3) {
-			if(splitCommand[0].equalsIgnoreCase("!duel") &&
-					splitCommand[1].startsWith("<@") &&
-					 FormattingUtils.isValidAmount(splitCommand[2])) {
-				return DUEL;
-			}
-			if(splitCommand[0].equalsIgnoreCase("!giftchuck") &&
-					splitCommand[1].startsWith("<@") &&
-					FormattingUtils.isValidAmount(splitCommand[2])) {
-				return GIFTCHUCK;
-			}
-		}else if(splitCommand.length==2){
-			if(splitCommand[0].equalsIgnoreCase("!duel") &&
-					(FormattingUtils.isValidAmount(splitCommand[1]) || splitCommand[1].equalsIgnoreCase("allin"))) {
-				return DUELSETAMOUNT;
-			}
-			if(splitCommand[0].equalsIgnoreCase("!accept")) {
-				return ACCEPT;
-			}
-			if(splitCommand[0].equalsIgnoreCase("!activate")) {
-				return ACTIVATESERVICE;
-			}
-			if(splitCommand[0].equalsIgnoreCase("!farm")) {
-				return FARM;
-			}
-		}else if(splitCommand.length == 1){
-			if(splitCommand[0].equalsIgnoreCase("!farm")) {
-				return FARM;
-			}else {
-				for(RehabCommandsEnum commandEnum : RehabCommandsEnum.values()) {
-					if(commandEnum.getCommand().equalsIgnoreCase(splitCommand[0])) {
-						return commandEnum;
-					}
-				}
+		for(RehabCommandsEnum commandEnum : RehabCommandsEnum.values()) {
+			String[] splitCommandEnum = commandEnum.getCommand().split(" ");
+			if(splitCommandEnum[0].equalsIgnoreCase(splitCommand[0])
+					&& (commandEnum.getChannel().equals(channel) || commandEnum.getChannel().equals(ChannelsEnum.ALL))
+					&& commandEnum.isActive()) {
+				return commandEnum;
 			}
 		}
-		return NON_EXISTANT;
+		return null;
 	}
 	
 	public String getCommand() {
@@ -97,4 +70,9 @@ public enum RehabCommandsEnum {
 	public boolean isActive() {
 		return active;
 	}
+
+	public ChannelsEnum getChannel() {
+		return channel;
+	}
+	
 }

@@ -6,7 +6,7 @@ public class DBQueriesConstants {
 	
 	public static final String SELECT_PROPERTY = "SELECT VALUE FROM PROPERTIES WHERE KEY = ?";
 	
-	public static final String INSERT_NEW_DEGEN = "INSERT INTO DEGENS (DISCORDID,NAME) VALUES (?,?)";
+	public static final String INSERT_NEW_DEGEN = "INSERT INTO DEGENS (DISCORDID,NAME,IRONMAN) VALUES (?,?,?)";
 	
 	public static final String SELECT_FUNDS_BY_ID = "SELECT FUNDS.FUNDS FROM DEGENS, FUNDS WHERE DEGENS.DEGENID = FUNDS.DEGENID AND DEGENS.DISCORDID = ?";
 	

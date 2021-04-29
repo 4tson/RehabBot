@@ -22,6 +22,5 @@ public class ServiceListener extends ListenerAdapter{
 	        	Duration duration = Duration.ofMillis(expiry - System.currentTimeMillis());
 	        	event.getChannel().sendMessage("Service has " + duration.toHoursPart() + " hour(s), " + duration.toMinutesPart() + " minute(s), and " + duration.toSecondsPart() + " second(s) left.").queue();
 	        }
-	        
 	}
 }

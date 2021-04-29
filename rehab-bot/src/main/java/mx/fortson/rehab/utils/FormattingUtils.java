@@ -40,7 +40,8 @@ public class FormattingUtils {
 	}
 
 	public static boolean isValidAmount(String amount) {
-		if(StringUtils.isNumeric(amount) || amount.matches("(([0-9])+(k|m|b|K|M|B))")) {
+		if(StringUtils.isNumeric(amount) 
+				|| amount.matches("(^((\\d*\\.?\\d{1,3})(k|K))|^((\\d*\\.?\\d{1,6})(m|M))|^((\\d*\\.?\\d{1,9})(b|B)))")) {
 			return true;
 		}
 		return false;
@@ -55,8 +56,8 @@ public class FormattingUtils {
 		}else {
 			String suffix = amount.substring(amount.length()-1, amount.length());
 			SuffixEnum suffixEnum = SuffixEnum.fromSuffix(suffix);
-			Long amountLong = Long.parseLong(amount.substring(0, amount.length()-1));
-			result = amountLong * suffixEnum.getBase();
+			Double amountDouble = Double.parseDouble(amount.substring(0, amount.length()-1));
+			result = (long) (amountDouble * suffixEnum.getBase());
 		}
 		return result;
 	}

@@ -1,4 +1,4 @@
-package mx.fortson.rehab;
+package mx.fortson.rehab.channels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +13,12 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
-public class Shop {
+public class Shop implements IChannel{
 
 	@SuppressWarnings("unchecked")
-	public static void processCommand(GuildMessageReceivedEvent event) {
+	public void processMessage(GuildMessageReceivedEvent event) {
 		Role shopperRole = event.getGuild().getRolesByName("shopper", true).get(0);
-		String messageContent = event.getMessage().getContentRaw();
+		String messageContent = event.getMessage().getContentDisplay();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();
 			User author = event.getAuthor();

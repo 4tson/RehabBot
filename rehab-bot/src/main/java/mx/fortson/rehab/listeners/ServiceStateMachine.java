@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.Service;
 import mx.fortson.rehab.bean.BiddableServiceBean;
+import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.tasks.KillServiceTask;
 import mx.fortson.rehab.utils.FormattingUtils;
 import mx.fortson.rehab.utils.MessageUtils;
@@ -67,33 +68,42 @@ public class ServiceStateMachine extends ListenerAdapter{
 	@Override
     public void onMessageReceived(MessageReceivedEvent event) {
 		 if (event.getAuthor().isBot()) return; // don't respond to other bots
-	        if (!event.getChannel().getName().equalsIgnoreCase("services")) return; // ignore other channels
+	        if (!event.getChannel().getName().equalsIgnoreCase("bidding-services")) return; // ignore other channels
 	        MessageChannel channel = event.getChannel();
-	        String content = event.getMessage().getContentRaw();
+	        String content = event.getMessage().getContentDisplay();
 	        if(content.equalsIgnoreCase("!status")) {
 	        	channel.sendMessage(MessageUtils.getServiceBidStatus(biddableService)).allowedMentions(new ArrayList<>()).queue();
+	        	return;
+	        }
+	        if(content.equalsIgnoreCase("!commands")){
+	        	channel.sendMessage(MessageUtils.getAvailableRehabCommands(ChannelsEnum.BIDSERVICE)).queue();;
+	        	return;
 	        }
 	        String[] contentSplit = content.split(" ");
 	        if(contentSplit.length == 2) {
 		        if(contentSplit[0].equalsIgnoreCase("!bid")) {
 		        	if(event.getAuthor().getIdLong()==biddableService.getWinnerID()) {
 		        		channel.sendMessage("You already have the winning bid so far.").queue();
-		        	}
-		        	String amountS = contentSplit[1];
-		        	if(FormattingUtils.isValidAmount(amountS)) {
-		        		Long amountL = FormattingUtils.parseAmount(amountS);
-		        		if(amountL>biddableService.getBid()) {
-			        		boolean bid = ServicesUtils.bid(event.getAuthor().getIdLong(),amountL);
-			        		if(bid) {
-			        			ServicesUtils.returnBid(biddableService);
-			        			biddableService.setBid(amountL);
-			        			biddableService.setWinnerID(event.getAuthor().getIdLong());
-			        			updateTimer();
+		        	}else {
+			        	String amountS = contentSplit[1];
+			        	if(FormattingUtils.isValidAmount(amountS)) {
+			        		Long amountL = FormattingUtils.parseAmount(amountS);
+			        		if(amountL>biddableService.getBid()) {
+				        		boolean bid = ServicesUtils.bid(event.getAuthor().getIdLong(),amountL);
+				        		if(bid) {
+				        			ServicesUtils.returnBid(biddableService);
+				        			biddableService.setBid(amountL);
+				        			biddableService.setWinnerID(event.getAuthor().getIdLong());
+				        			updateTimer();
+				        		}
+				        		channel.sendMessage(MessageUtils.getBidResult(bid,biddableService)).allowedMentions(new ArrayList<>()).queue();
+			        		}else {
+			        			channel.sendMessage("Your bid has to be greater than the current bid of " + FormattingUtils.format(biddableService.getBid())).allowedMentions(new ArrayList<>()).queue();
 			        		}
-			        		channel.sendMessage(MessageUtils.getBidResult(bid,biddableService)).allowedMentions(new ArrayList<>()).queue();
-		        		}else {
-		        			channel.sendMessage("Your bid has to be greater than the current bid of " + FormattingUtils.format(biddableService.getBid())).allowedMentions(new ArrayList<>()).queue();
-		        		}
+			        	}else {
+			        		event.getMessage().delete().queue();
+			        		channel.sendMessage(MessageUtils.announceWrongCommand(content)).allowedMentions(new ArrayList<>()).queue();
+			        	}
 		        	}
 		        }
 	        }else {

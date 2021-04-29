@@ -1,9 +1,14 @@
 package mx.fortson.rehab;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.Timer;
 
 import javax.security.auth.login.LoginException;
@@ -11,6 +16,9 @@ import javax.security.auth.login.LoginException;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.ServiceBean;
+import mx.fortson.rehab.enums.ChannelsEnum;
+import mx.fortson.rehab.enums.RolesEnum;
+import mx.fortson.rehab.listeners.LeaveListener;
 import mx.fortson.rehab.listeners.MessageListener;
 import mx.fortson.rehab.listeners.ServiceListener;
 import mx.fortson.rehab.tasks.KillServiceTask;
@@ -19,8 +27,11 @@ import mx.fortson.rehab.utils.ServicesUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Category;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -29,23 +40,40 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 public class RehabBot {
 	
 	private static JDA api;
+	private static Properties props;
+	private static Guild guild;
+	
+	public static Guild getGuild() {
+		return guild;
+	}
 	
 	public static JDA getApi() {
 		return api;
 	}
 	
-	public static void main(String[] args) throws SQLException, ClassNotFoundException {
-		JDABuilder builder = JDABuilder.createDefault("")
+	public static void main(String[] args) throws SQLException, ClassNotFoundException, FileNotFoundException, IOException {
+		if(args.length<1) {
+			System.err.println("Expected properties file location as parameter.");
+			System.exit(1);
+		}
+		initProperties(args[0]);
+		
+		JDABuilder builder = JDABuilder.createDefault(getBotToken())
 				.setChunkingFilter(ChunkingFilter.ALL) // enable member chunking for all guilds
 		          .setMemberCachePolicy(MemberCachePolicy.ALL) // ignored if chunking enabled
 		          .enableIntents(GatewayIntent.GUILD_MEMBERS);
-		builder.addEventListeners(new MessageListener());
+		builder.addEventListeners(new MessageListener())
+		.addEventListeners(new LeaveListener());
 		try {
 			api = builder.build()
 			.awaitReady();
-			register(getApi().getSelfUser().getIdLong(),"Shop Owner");
+			register(getApi().getSelfUser().getIdLong(),"Shop Owner",false);
+			guild = api.getGuildById(getGuildId());
+			initChannels();
 			clearAndRestartServices();
-			announceUp();
+			if(isAnnounceUp()) {
+				announceUp();
+			}
 		}catch(LoginException e) {
 			System.err.println("login error");
 			e.printStackTrace();
@@ -56,22 +84,79 @@ public class RehabBot {
 		
 	}
 	
+	private static void initChannels() {
+		for(ChannelsEnum channel : ChannelsEnum.values()) {
+			if(!channel.equals(ChannelsEnum.ALL)) {
+				getOrCreateChannel(channel);
+			}
+		}
+	}
+
+	private static void initProperties(String file) throws FileNotFoundException, IOException {
+		props = new Properties();
+		props.load(new FileInputStream(new File(file)));
+	}
+	
+	public static TextChannel getOrCreateChannel(String name, Category category, int slowmode, RolesEnum... roles){
+		for(TextChannel channel : getGuild().getTextChannels()) {
+			if(channel.getName().equalsIgnoreCase(name)) {
+				return channel;
+			}
+		}
+		System.out.println("Creating channel");
+		TextChannel createdChannel = getGuild().createTextChannel(name, category).setSlowmode(slowmode).complete();
+		if(roles.length>0) {
+			createdChannel.putPermissionOverride(getOrCreateRole("@everyone")).deny(Permission.VIEW_CHANNEL).complete();
+			for(RolesEnum role : roles) {
+				createdChannel.putPermissionOverride(getOrCreateRole(role.getName())).setAllow(Permission.VIEW_CHANNEL).complete();
+			}
+		}
+		return createdChannel;
+	}
+	
+	public static TextChannel getOrCreateChannel(ChannelsEnum channel){
+		return getOrCreateChannel(channel.getName(),getOrCreateCategory(channel.getCategory()),channel.getSlowmode(),channel.getPermitedRoles());
+	}
+
+
+	public static Category getOrCreateCategory(String name) {
+		for(Category category : getGuild().getCategories()) {
+			if(category.getName().equalsIgnoreCase(name)) {
+				return category;
+			}
+		}
+		System.out.println("creating category");
+		return getGuild().createCategory(name).complete();
+	}
+	
+	public static Role getOrCreateRole(String name) {
+		for(Role role : getGuild().getRoles()) {
+			if(role.getName().equalsIgnoreCase(name)) {
+				return role;
+			}
+		}
+		return getGuild().createRole().setName(name).complete();
+	}
+	
+	private static String getGuildId() {
+		return props.getProperty("guild-id");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static void clearAndRestartServices() throws InterruptedException {
+		TextChannel servicesShopChannel = getOrCreateChannel(ChannelsEnum.SERVICESSHOP);
+		{
+			TextChannel bidServicesChannel = getOrCreateChannel(ChannelsEnum.BIDSERVICE);
+			purgeChannel(bidServicesChannel);
+			purgeChannel(servicesShopChannel);
+		}
 		
-		TextChannel servicesChannel = getApi().getTextChannelsByName("services", true).get(0);
-		TextChannel servicesShopChannel = getApi().getTextChannelsByName("services-shop", true).get(0);
-		purgeChannel(servicesChannel);
-		purgeChannel(servicesShopChannel);
-
-		
+		Category myServicesCat = getOrCreateCategory("my-services");
 		//Delete all channels in "my-services"
-		getApi().getCategoriesByName("my-services", true).get(0).getTextChannels().forEach(a -> a.delete().complete());
+		myServicesCat.getTextChannels().forEach(a -> a.delete().complete());
+		
 		//Get all "running" services
 		try {
-			
-			
-			
 			PagedMessageBean pagedServiceShop = MessageUtils.getShopDetails(DatabaseDegens.getPredServices());
 			while(pagedServiceShop.isMoreRecords()) {
 				servicesShopChannel.sendMessage(pagedServiceShop.getMessage()).allowedMentions(new ArrayList<>()).complete();
@@ -83,18 +168,18 @@ public class RehabBot {
 			List<ServiceBean> runningServices = DatabaseDegens.getRunningServices();
 			for(ServiceBean runningService : runningServices) {
 				
-				Member member = getApi().getGuilds().get(0).getMemberById(runningService.getOwnerDiscordId());
+				Member member = getGuild().getMemberById(runningService.getOwnerDiscordId());
 				if(null==member) {
-					
 					DatabaseDegens.deleteService(runningService.getServiceId());
 					continue;
 				}
 				Long timeToRun = (long) (1000 * 60 * 60 * runningService.getLength());
 				Long expireTime = timeToRun + System.currentTimeMillis();
-				TextChannel createdChannel = RehabBot.getApi().getCategoriesByName("my-services", true).get(0).createTextChannel(runningService.getServiceId() + "-" + runningService.getName() + "-" + runningService.getOwnerName()).complete();
+				TextChannel createdChannel = myServicesCat.createTextChannel(runningService.getServiceId() + "-" + runningService.getName() + "-" + runningService.getOwnerName()).complete();
 				 
-				createdChannel.putPermissionOverride(RehabBot.getApi().getRolesByName("@everyone", true).get(0)).deny(Permission.VIEW_CHANNEL).complete();
+				createdChannel.putPermissionOverride(getOrCreateRole("@everyone")).deny(Permission.VIEW_CHANNEL).complete();
 				createdChannel.putPermissionOverride(member).setAllow(Permission.VIEW_CHANNEL).complete();
+				
 				StringBuilder greeting = new StringBuilder();
 				greeting.append(runningService.info())
 				.append(" You can check the status at any time using !status");
@@ -136,20 +221,49 @@ public class RehabBot {
 	}
 
 	public static void announceUp() {
-		getApi().getTextChannelsByName("general",true).get(0).sendMessage("@here the bot is now up. !degen if you can't see channels.").queue();
+		getOrCreateChannel("general", null,0).sendMessage("@here the bot is now up. !degen if you can't see channels.").queue();
 	}
 	
-	public static boolean register(long id, String name) {
+	public static boolean register(long id, String name, boolean iron) {
 		try {
-			
 			if(DatabaseDegens.existsById(id)) {
 				return false;
 			}else {
-				return DatabaseDegens.insertNewDegen(id,name);
+				return DatabaseDegens.insertNewDegen(id,name,iron);
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	
+	public static boolean isRole(Member member, String roleName) {
+		for(Role memberRole: member.getRoles()) {
+			if(memberRole.getName().equalsIgnoreCase(roleName)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isAnnounceUp() {
+		return Boolean.valueOf(props.getProperty("announce-up"));
+	}
+
+	private static String getBotToken() {
+		return props.getProperty("token");
+	}
+
+	public static String getDBUrl() {
+		return props.getProperty("db.url");
+	}
+
+	public static String getDbUsername() {
+		return props.getProperty("db.username");
+	}
+
+	public static String getDbPassword() {
+		return props.getProperty("db.password");
 	}
 }
