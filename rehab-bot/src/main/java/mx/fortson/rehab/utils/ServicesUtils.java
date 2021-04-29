@@ -129,12 +129,12 @@ public class ServicesUtils {
 		//everything is good, let's enable it
 		Long timeToRun = (long) (1000 * 60 * 60 * service.getLength());
 		Long expireTime = timeToRun + System.currentTimeMillis();
-		TextChannel createdChannel = RehabBot.getApi().getCategoriesByName("my-services", true).get(0).createTextChannel(service.getServiceId() + "-" + service.getName() + "-" + service.getOwnerName()).complete();
+		TextChannel createdChannel = RehabBot.getOrCreateChannel(service.getServiceId() + "-" + service.getName() + "-" + service.getOwnerName(),RehabBot.getOrCreateCategory("my-services"),0);
 		StringBuilder greeting = new StringBuilder();
 		greeting.append(service.info())
 		.append(" You can check the status at any time using !status");
 		createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
-		createdChannel.putPermissionOverride(RehabBot.getApi().getRolesByName("@everyone", true).get(0)).deny(Permission.VIEW_CHANNEL).complete();
+		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole("@everyone")).deny(Permission.VIEW_CHANNEL).complete();
 		createdChannel.putPermissionOverride(createdChannel.getGuild().getMemberById(service.getOwnerDiscordId())).setAllow(Permission.VIEW_CHANNEL).complete();
 		ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime);
 		

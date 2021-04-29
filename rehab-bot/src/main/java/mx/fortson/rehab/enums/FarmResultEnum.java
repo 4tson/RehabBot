@@ -75,7 +75,7 @@ public enum FarmResultEnum {
 			"The possibilities are endless."
 			}, 
 			new Long[]{73L,73L},
-			0.002,
+			0.001,
 			FarmTypeEnum.SERVICE),
 	;
 	

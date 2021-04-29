@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import mx.fortson.rehab.RehabBot;
+import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.tasks.RemoveListenerTask;
 import mx.fortson.rehab.utils.DuelUtils;
 import mx.fortson.rehab.utils.MessageUtils;
@@ -32,7 +34,7 @@ public class DuelStateMachine extends ListenerAdapter {
 		    timer.schedule(task, delay);
 		}
 		 if (event.getAuthor().isBot()) return; // don't respond to other bots
-	        if (!event.getChannel().getName().equalsIgnoreCase("bot-commands")) return; // ignore other channels
+	        if (!event.getChannel().getName().equalsIgnoreCase(RehabBot.getOrCreateChannel(ChannelsEnum.DUELARENA).getName())) return; // ignore other channels
 	        MessageChannel channel = event.getChannel();
 	        String content = event.getMessage().getContentRaw();
 	        if (event.getAuthor().getIdLong() == challengedId) {

@@ -22,7 +22,6 @@ import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.FarmTypeEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
-import mx.fortson.rehab.enums.ShopCommandsEnum;
 
 public class MessageUtils {
 
@@ -32,23 +31,6 @@ public class MessageUtils {
 		for(RehabCommandsEnum command : RehabCommandsEnum.values()) {
 			if(command.isActive() && 
 					(command.getChannel().equals(channel) || command.getChannel().equals(ChannelsEnum.ALL))) {
-				sb.append("`")
-				.append(command.getCommand())
-				.append("`")
-				.append("   -   ")
-				.append(command.getDescription())
-				.append("\n");
-			}
-		}
-		
-		return sb.toString();
-	}
-	
-	public static String getAvailableShopCommands() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("This is the list of currently available shop commands:\n");
-		for(ShopCommandsEnum command : ShopCommandsEnum.values()) {
-			if(command.isActive()) {
 				sb.append("`")
 				.append(command.getCommand())
 				.append("`")

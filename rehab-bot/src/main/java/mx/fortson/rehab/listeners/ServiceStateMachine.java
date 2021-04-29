@@ -39,7 +39,7 @@ public class ServiceStateMachine extends ListenerAdapter{
 			public void run() {
 				Long timeToRun = (long) (1000 * 60 * 60 * biddableService.getLengthHours());
 				Long expireTime = timeToRun + System.currentTimeMillis();
-				TextChannel servicesChannel = RehabBot.getApi().getTextChannelsByName("services",true).get(0);
+				TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
 				
 				ServiceListener sl = new ServiceListener(servicesChannel.getIdLong(), expireTime);
 				
@@ -68,7 +68,7 @@ public class ServiceStateMachine extends ListenerAdapter{
 	@Override
     public void onMessageReceived(MessageReceivedEvent event) {
 		 if (event.getAuthor().isBot()) return; // don't respond to other bots
-	        if (!event.getChannel().getName().equalsIgnoreCase("bidding-services")) return; // ignore other channels
+	        if (!event.getChannel().getName().equalsIgnoreCase(RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE).getName())) return; // ignore other channels
 	        MessageChannel channel = event.getChannel();
 	        String content = event.getMessage().getContentDisplay();
 	        if(content.equalsIgnoreCase("!status")) {

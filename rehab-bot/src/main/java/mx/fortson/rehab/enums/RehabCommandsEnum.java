@@ -34,6 +34,22 @@ public enum RehabCommandsEnum {
 	BUYSERVICESHOP("!buy [id]", "Buys one of the predetermined services in the shop.", ChannelsEnum.SERVICESSHOP, true),
 	
 	ACTIVATESERVICE("!activate [id]","Allows you to activate a service based on its ID",ChannelsEnum.SERVICES,true),
+	
+	SHOPAVAIL("!shop", "Lets you see all the items for sale, their IDs, and who is selling them.",ChannelsEnum.SHOP, true),
+	
+	BUYSHOP("!buy [id]", "Lets you buy an item based on its ID, provided you have the funds to do so.", ChannelsEnum.SHOP, true),
+	
+	SELLSHOP("!sell [id] [price]", "Lets you put an item for sale in the shop for other players based on its ID. If you don't define a price, the value will be taken as price.", ChannelsEnum.SHOP, true),
+	
+	CANCEL_SALE("!cancel [id]", "Lets you cancel a sale.",ChannelsEnum.SHOP, true),
+	
+	ADDROLESHOP("!addrole","Adds the `shopper` role, this means you will get pinged when a new item is put for sale",ChannelsEnum.SHOP, true),
+	
+	REMROLESHOP("!remrole","Removes the `shopper` role, this means you wont get pinged when a new item is put for sale",ChannelsEnum.SHOP, true),
+	
+	SELLSERVICE("!sellservice [id] [price]", "Lets you put a service for sale in the shop for other players based on its ID. You need to define a price.",ChannelsEnum.SHOP, true),
+	
+	BUY_SERVICE("!buyservice [id]", "Lets you buy a service based on its ID, provided you have the funds to do so.",ChannelsEnum.SHOP, true),
 	;
 	
 	
