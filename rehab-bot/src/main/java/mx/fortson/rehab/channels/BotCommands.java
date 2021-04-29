@@ -91,13 +91,4 @@ public class BotCommands implements IChannel{
 			break;	
 		}
 	}
-
-//case ACTIVATESERVICE:
-//	String id = messageContent.split(" ")[1];
-//	if(StringUtils.isNumeric(id)) {
-//		channel.sendMessage(ServicesUtils.activateService(author.getIdLong(),Long.parseLong(id))).queue();
-//	}else {
-//		channel.sendMessage("Your command is invalid").queue();
-//	}
-//	break;
 }

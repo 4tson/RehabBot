@@ -2,6 +2,8 @@ package mx.fortson.rehab.channels;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.StringUtils;
+
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
 import mx.fortson.rehab.listeners.DuelStateMachine;
@@ -49,11 +51,11 @@ public class DuelArena implements IChannel{
 	private void resolveGiftChuck(GuildMessageReceivedEvent event) {
 		MessageChannel channel = event.getChannel();
 		User author = event.getAuthor();
-		String messageContent = event.getMessage().getContentDisplay();
+		String messageContent = event.getMessage().getContentRaw();
 		String[] splitContent = messageContent.split(" ");
 		
 		if(splitContent.length==3) {
-			if(splitContent[1].startsWith("@") && FormattingUtils.isValidAmount(splitContent[2])) {
+			if(splitContent[1].startsWith("<@") && FormattingUtils.isValidAmount(splitContent[2])) {
 				Long giftedId = event.getMessage().getMentionedUsers().get(0).getIdLong();
 				Long giftChuckAmount = FormattingUtils.parseAmount((splitContent[2]));
 				Long gifterId = author.getIdLong();
@@ -67,7 +69,7 @@ public class DuelArena implements IChannel{
 	private void resolveDuel(GuildMessageReceivedEvent event) {
 		MessageChannel channel = event.getChannel();
 		User author = event.getAuthor();
-		String messageContent = event.getMessage().getContentDisplay();
+		String messageContent = event.getMessage().getContentRaw();
 		
 		String[] splitContent = messageContent.split(" ");
 		
@@ -76,15 +78,15 @@ public class DuelArena implements IChannel{
 			return;
 		}
 		
-		if(splitContent.length == 2) {
+		if(splitContent.length == 2 && StringUtils.isNumeric(splitContent[1])) {
 			Long stakeAmount = 0L;
-			stakeAmount = FormattingUtils.parseAmount(messageContent.split(" ")[1]);
+			stakeAmount = FormattingUtils.parseAmount(splitContent[1]);
 			channel.sendMessage(MessageUtils.getDuelResult(DuelUtils.randomDuelSetAmount(author.getIdLong(),stakeAmount))).allowedMentions(new ArrayList<>()).queue();
 			return;
 		}
 		
 		if(splitContent.length==3) {		
-			if(splitContent[1].startsWith("@") && FormattingUtils.isValidAmount(splitContent[2])) {
+			if(splitContent[1].startsWith("<@") && FormattingUtils.isValidAmount(splitContent[2])) {
 				Member challengedMember = event.getMessage().getMentionedMembers().get(0);
 				Long challengedId = challengedMember.getIdLong();
 				if(challengedId.equals(author.getIdLong())) {

@@ -16,6 +16,7 @@ import javax.security.auth.login.LoginException;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.ServiceBean;
+import mx.fortson.rehab.bean.ServiceTimerTaskPair;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RolesEnum;
 import mx.fortson.rehab.listeners.LeaveListener;
@@ -185,7 +186,7 @@ public class RehabBot {
 				.append(" You can check the status at any time using !status");
 				createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
 				
-				ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime);
+				ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, runningService.getServiceId());
 				Service serviceTask = new Service(runningService.getOwnerDiscordId(),
 						runningService.getName(),
 						runningService.getFarms(),
@@ -200,6 +201,8 @@ public class RehabBot {
 				Timer kstTimer = new Timer("KillService-" + runningService.getServiceId() + "Timer");
 				KillServiceTask kst = new KillServiceTask(serviceTask);
 				kstTimer.schedule(kst, new Date(expireTime));
+				
+				ServicesUtils.addCancellableService(runningService.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
 			}
 			//We create the new services service
 			ServicesUtils.createNewService();

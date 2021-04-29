@@ -27,9 +27,6 @@ public class FarmUtils {
 					if(farms > oldAttempts) {
 						farms = oldAttempts;
 					}
-					if(farms>15) {
-						farms = 15;
-					}
 					result.setAttempts(true);
 					int newAttempts = oldAttempts;
 					Long totalFarmed = 0L;

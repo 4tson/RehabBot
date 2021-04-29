@@ -41,7 +41,7 @@ public class ServiceStateMachine extends ListenerAdapter{
 				Long expireTime = timeToRun + System.currentTimeMillis();
 				TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
 				
-				ServiceListener sl = new ServiceListener(servicesChannel.getIdLong(), expireTime);
+				ServiceListener sl = new ServiceListener(servicesChannel.getIdLong(), expireTime, 0);
 				
 				Service serviceTask = new Service(biddableService.getWinnerID(),
 						biddableService.getServiceName(),
@@ -50,6 +50,7 @@ public class ServiceStateMachine extends ListenerAdapter{
 						false,
 						0,
 						sl);
+				
 				Timer serviceTimer = new Timer("ServiceTimer");
 				serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * biddableService.getIntervalMinutes()));
 				

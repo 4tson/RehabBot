@@ -3,6 +3,8 @@ package mx.fortson.rehab.utils;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 
 import mx.fortson.rehab.DatabaseDegens;
@@ -11,6 +13,7 @@ import mx.fortson.rehab.Service;
 import mx.fortson.rehab.bean.BiddableServiceBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
 import mx.fortson.rehab.bean.ServiceBean;
+import mx.fortson.rehab.bean.ServiceTimerTaskPair;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.listeners.ServiceListener;
@@ -20,6 +23,24 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 public class ServicesUtils {
+	
+	private static Map<Integer,ServiceTimerTaskPair> runningServices;
+	
+	
+	static{
+		runningServices = new HashMap<>();
+	}
+	
+	public static void stopService(int serviceId) {
+		ServiceTimerTaskPair timerTaskPair = runningServices.get(serviceId);
+		if(null!=timerTaskPair) {
+			timerTaskPair.getKst().cancel();
+			timerTaskPair.getKstTimer().purge();
+			KillServiceTask newKst = new KillServiceTask(timerTaskPair.getKst().getService());
+			timerTaskPair.getKstTimer().schedule(newKst, 0L);
+			runningServices.remove(serviceId,timerTaskPair);
+		}
+	}
 	
 	public static void createNewService() {
 		BiddableServiceBean biddableService = new BiddableServiceBean();
@@ -136,7 +157,7 @@ public class ServicesUtils {
 		createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
 		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole("@everyone")).deny(Permission.VIEW_CHANNEL).complete();
 		createdChannel.putPermissionOverride(createdChannel.getGuild().getMemberById(service.getOwnerDiscordId())).setAllow(Permission.VIEW_CHANNEL).complete();
-		ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime);
+		ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, service.getServiceId());
 		
 		Service serviceTask = new Service(service.getOwnerDiscordId(),
 				service.getName(),
@@ -152,6 +173,21 @@ public class ServicesUtils {
 		KillServiceTask kst = new KillServiceTask(serviceTask);
 		kstTimer.schedule(kst, new Date(expireTime));
 		DatabaseDegens.updateRunningService(service.getServiceId());
+		addCancellableService(service.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
+	}
+	
+	public static void addCancellableService(int id, ServiceTimerTaskPair pair) {
+		runningServices.put(id, pair);
+	}
+
+	public static ServiceBean getServiceById(int serviceId) {
+		ServiceBean service = null;
+		try {
+			service= DatabaseDegens.getServiceById(serviceId);
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return service;
 	}
 
 }

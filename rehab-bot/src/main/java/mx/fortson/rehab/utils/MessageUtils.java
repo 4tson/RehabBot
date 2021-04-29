@@ -14,9 +14,9 @@ import mx.fortson.rehab.bean.DuelResultBean;
 import mx.fortson.rehab.bean.FarmCollectionBean;
 import mx.fortson.rehab.bean.FarmResultBean;
 import mx.fortson.rehab.bean.ItemBean;
-import mx.fortson.rehab.bean.MessageUtilsResultBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
+import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.bean.TransactionResultBean;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.enums.ChannelsEnum;
@@ -109,8 +109,13 @@ public class MessageUtils {
 		}
 	}
 
-	public static MessageUtilsResultBean getFarmResult(FarmCollectionBean farmCollectionBean, Long id) {
-		MessageUtilsResultBean result = new MessageUtilsResultBean();
+	public static PagedMessageBean getFarmResult(FarmCollectionBean farmCollectionBean, Long id) {
+		PagedMessageBean result = new PagedMessageBean();
+		
+		
+//		MessageUtilsResultBean result = new MessageUtilsResultBean();
+		List<FarmResultBean> leftovers = new ArrayList<>(farmCollectionBean.getFarms());
+		
 		if(!farmCollectionBean.isExists()) {
 			result.setMessage("This user is not registered! Protip: `!degen`");
 		}else if(!farmCollectionBean.isAttempts()) {
@@ -120,59 +125,71 @@ public class MessageUtils {
 			StringBuilder sb = new StringBuilder();
 			
 			for(FarmResultBean farmResult : farmCollectionBean.getFarms()) {
-				if(farmResult.getType().equals(FarmTypeEnum.ITEM_UNIQUE) || farmResult.getType().equals(FarmTypeEnum.SERVICE)){
-					sb.append("@here - ");
-					result.setPingList(null);
-				}
-				switch(farmResult.getType()) {
-				case CASH:
-					sb.append("<@")
-					.append(id)
-					.append("> - ")
-					.append(FormattingUtils.formatFarm(farmResult.getFlavourText(),farmResult.getFarmedAmount()))
-					.append("\n");
-				break;
-				case ITEM_MEH:
-				case ITEM_GREAT:
-				case ITEM_UNIQUE:
-					sb.append("<@")
-					.append(id)
-					.append("> - You found a `")
-					.append(farmResult.getItemName())
-					.append("`! ")
-					.append(FormattingUtils.formatFarm(farmResult.getFlavourText(),farmResult.getFarmedAmount()))
-					.append(" congratulations.\n");
+				if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-260){
+					if(farmResult.getType().equals(FarmTypeEnum.ITEM_UNIQUE) || farmResult.getType().equals(FarmTypeEnum.SERVICE)){
+						sb.append("@here - ");
+						result.setPingList(null);
+					}
+					switch(farmResult.getType()) {
+					case CASH:
+						sb.append("<@")
+						.append(id)
+						.append("> - ")
+						.append(FormattingUtils.formatFarm(farmResult.getFlavourText(),farmResult.getFarmedAmount()))
+						.append("\n");
 					break;
-				case SERVICE:
-					System.out.println("Service found " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-					sb.append("<@")
-					.append(id)
-					.append("> - You found `")
-					.append(farmResult.getName())
-					.append("` it will generate `")
-					.append(farmResult.getFarms())
-					.append("` farm(s) every `")
-					.append(farmResult.getInterval())
-					.append("` minute(s) for `")
-					.append(farmResult.getRateHours())
-					.append("` hour(s). ")
-					.append(farmResult.getFlavourText())
-					.append(" You can `!activateservice {id}` or `!sellservice {id}` it in the appropiate channels. Enjoy.\n");
+					case ITEM_MEH:
+					case ITEM_GREAT:
+					case ITEM_UNIQUE:
+						sb.append("<@")
+						.append(id)
+						.append("> - You found a `")
+						.append(farmResult.getItemName())
+						.append("`! ")
+						.append(FormattingUtils.formatFarm(farmResult.getFlavourText(),farmResult.getFarmedAmount()))
+						.append(" congratulations.\n");
+						break;
+					case SERVICE:
+						System.out.println("Service found " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+						sb.append("<@")
+						.append(id)
+						.append("> - You found `")
+						.append(farmResult.getName())
+						.append("` it will generate `")
+						.append(farmResult.getFarms())
+						.append("` farm(s) every `")
+						.append(farmResult.getInterval())
+						.append("` minute(s) for `")
+						.append(farmResult.getRateHours())
+						.append("` hour(s). ")
+						.append(farmResult.getFlavourText())
+						.append(" You can `!activateservice {id}` or `!sellservice {id}` it in the appropiate channels. Enjoy.\n");
+						break;
+					}
+					leftovers.remove(farmResult);
+				}else {
+					result.setMoreRecords(true);
+					result.setMessage(sb.toString());
+					result.setLeftOverRecords(leftovers);
 					break;
 				}
 			}
-			sb.append(" You now have ")
-			.append(FormattingUtils.format(farmCollectionBean.getNewFunds()));
 			
-			if(farmCollectionBean.getNewAttempts()>0) {
-				sb.append(". You have ")
-				.append(farmCollectionBean.getNewAttempts())
-				.append(" attempt(s).");
-			}else {
-				sb.append(". You have run out of attempts.");
+			if(!result.isMoreRecords()) {
+				result.setMoreRecords(false);
+				sb.append(" You now have ")
+				.append(FormattingUtils.format(farmCollectionBean.getNewFunds()));
+				
+				if(farmCollectionBean.getNewAttempts()>0) {
+					sb.append(". You have ")
+					.append(farmCollectionBean.getNewAttempts())
+					.append(" attempt(s).");
+				}else {
+					sb.append(". You have run out of attempts.");
+				}
+				
+				result.setMessage(sb.toString());
 			}
-			
-			result.setMessage(sb.toString());
 		}
 		return result;
 	}
@@ -517,6 +534,14 @@ public class MessageUtils {
 		.append(" for user <@")
 		.append(idLong)
 		.append(">");
+		return sb.toString();
+	}
+
+	public static CharSequence confirmServiceCancel(ServiceBean serviceBean) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Are you sure you want to cancel ")
+		.append(serviceBean.info())
+		.append("? You will not be refunded for this service. This action cannot be undone. Y/N");
 		return sb.toString();
 	}
 }
