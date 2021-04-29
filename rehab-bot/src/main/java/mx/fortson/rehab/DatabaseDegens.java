@@ -27,11 +27,12 @@ public class DatabaseDegens {
 		}
 	}
 
-	public static boolean insertNewDegen(long id, String name) throws SQLException {
+	public static boolean insertNewDegen(long id, String name, boolean iron) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.INSERT_NEW_DEGEN)){
 			stmt.setLong(1,id);
 			stmt.setString(2, name);
+			stmt.setBoolean(3, iron);
 			return stmt.executeUpdate() == 1;
 		}
 	}

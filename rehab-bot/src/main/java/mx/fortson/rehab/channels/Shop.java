@@ -1,8 +1,9 @@
-package mx.fortson.rehab;
+package mx.fortson.rehab.channels;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ShopCommandsEnum;
@@ -13,12 +14,12 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
-public class Shop {
+public class Shop implements IChannel{
 
 	@SuppressWarnings("unchecked")
-	public static void processCommand(GuildMessageReceivedEvent event) {
-		Role shopperRole = event.getGuild().getRolesByName("shopper", true).get(0);
-		String messageContent = event.getMessage().getContentRaw();
+	public void processMessage(GuildMessageReceivedEvent event) {
+		Role shopperRole = RehabBot.getOrCreateRole("shopper");
+		String messageContent = event.getMessage().getContentDisplay();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();
 			User author = event.getAuthor();
@@ -36,7 +37,7 @@ public class Shop {
 				break;
 			case SELL:
 				if(messageContent.split(" ").length==2) {
-				channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(messageContent.split(" ")[1],author.getIdLong()),"",shopperRole.getIdLong())).queue();
+					channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(messageContent.split(" ")[1],author.getIdLong()),"",shopperRole.getIdLong())).queue();
 				}
 				if(messageContent.split(" ").length==3) {
 					channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(messageContent.split(" ")[1],messageContent.split(" ")[2],author.getIdLong(),false),"",shopperRole.getIdLong())).queue();
@@ -60,10 +61,12 @@ public class Shop {
 					channel.sendMessage(MessageUtils.announceSaleCancel(ShopUtils.cancelSale(messageContent.split(" ")[1],author.getIdLong()),author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 				}
 			case ADD_ROLE:
-				event.getGuild().addRoleToMember(event.getMember(), shopperRole).queue();;
+				event.getGuild().addRoleToMember(event.getMember(), shopperRole).queue();
+				channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),shopperRole.getName(),"added")).allowedMentions(new ArrayList<>()).queue();
 				break;
 			case REM_ROLE:
 				event.getGuild().removeRoleFromMember(event.getMember(), shopperRole).queue();
+				channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),shopperRole.getName(),"removed")).allowedMentions(new ArrayList<>()).queue();
 				break;
 			default:
 				event.getMessage().delete().queue();

@@ -6,18 +6,17 @@ import java.sql.SQLException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import mx.fortson.rehab.RehabBot;
+
 public class DegensDataSource {
 	
 	private static HikariConfig config = new HikariConfig();
     private static HikariDataSource ds;
     
     static {
-        config.setJdbcUrl("");
-        config.setUsername("");
-//        config.setPassword("password");
-//        config.addDataSourceProperty("cachePrepStmts", "true");
-//        config.addDataSourceProperty("prepStmtCacheSize", "250");
-//        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.setJdbcUrl(RehabBot.getDBUrl());
+        config.setUsername(RehabBot.getDbUsername());
+        config.setPassword(RehabBot.getDbPassword());
         ds = new HikariDataSource(config);
     }
     

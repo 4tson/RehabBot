@@ -19,17 +19,19 @@ import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
 import mx.fortson.rehab.bean.TransactionResultBean;
 import mx.fortson.rehab.constants.RehabBotConstants;
+import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.FarmTypeEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
 import mx.fortson.rehab.enums.ShopCommandsEnum;
 
 public class MessageUtils {
 
-	public static String getAvailableRehabCommands() {
+	public static String getAvailableRehabCommands(ChannelsEnum channel) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("This is the list of currently available commands:\n");
+		sb.append("This is the list of commands available in this channel:\n");
 		for(RehabCommandsEnum command : RehabCommandsEnum.values()) {
-			if(command.isActive()) {
+			if(command.isActive() && 
+					(command.getChannel().equals(channel) || command.getChannel().equals(ChannelsEnum.ALL))) {
 				sb.append("`")
 				.append(command.getCommand())
 				.append("`")
@@ -138,6 +140,7 @@ public class MessageUtils {
 			for(FarmResultBean farmResult : farmCollectionBean.getFarms()) {
 				if(farmResult.getType().equals(FarmTypeEnum.ITEM_UNIQUE) || farmResult.getType().equals(FarmTypeEnum.SERVICE)){
 					sb.append("@here - ");
+					result.setPingList(null);
 				}
 				switch(farmResult.getType()) {
 				case CASH:
@@ -512,6 +515,26 @@ public class MessageUtils {
 			sb.append("Sale of a predetermined service was not completed. Reason: ")
 			.append(saleResult.getFlavourText());
 		}
+		return sb.toString();
+	}
+
+	public static CharSequence announceWrongCommand(String messageContent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Command `")
+		.append(messageContent)
+		.append("` not valid, try `!commands` for a list of commands and their description. You might be in the wrong channel, or have the wrong command format.");
+		return sb.toString();
+	}
+
+	public static CharSequence announceRoleChange(long idLong, String roleName, String action) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("The role `")
+		.append(roleName)
+		.append("` was ")
+		.append(action)
+		.append(" for user <@")
+		.append(idLong)
+		.append(">");
 		return sb.toString();
 	}
 }
