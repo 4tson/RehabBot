@@ -34,7 +34,7 @@ public class FarmUtils {
 					for(int i = 0; i<farms; i++) {
 						FarmResultBean farmResultBean = new FarmResultBean();
 						newAttempts = newAttempts -1;
-						
+						int itemType = 0;
 						FarmResultEnum farmResult = RandomUtils.randomFarmEnum();
 						farmResultBean.setType(farmResult.getType());					
 						farmResultBean.setFlavourText(RandomUtils.randomStringFromArray(farmResult.getFlavourTexts()));
@@ -45,10 +45,13 @@ public class FarmUtils {
 						case CASH:
 							newFunds = newFunds + farmedAmount;
 							break;
-						case ITEM_GREAT:
-						case ITEM_MEH:
 						case ITEM_UNIQUE:
-							String itemName = RandomUtils.randomStringFromArray(farmResult.getType().getPossibleItems());
+							itemType+=1;
+						case ITEM_GREAT:
+							itemType+=1;
+						case ITEM_MEH:
+							List<String> itemNames = DatabaseDegens.getItemsFromType(itemType);
+							String itemName = RandomUtils.randomStringFromList(itemNames);
 							DatabaseDegens.createItem(itemName, farmedAmount,DatabaseDegens.getDegenId(id),false);
 							farmResultBean.setItemName(itemName);
 							break;

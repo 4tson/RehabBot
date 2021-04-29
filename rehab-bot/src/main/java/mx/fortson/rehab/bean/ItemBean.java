@@ -9,10 +9,33 @@ public class ItemBean {
 	private Long ownerDiscordId;
 	private Long value;
 	private String activeStr = "N/A";
+	private String imageName;
+	private String shortName;
+	
 	
 	private int degenID;
 	private boolean forSale;
 	
+	private boolean isService;
+	
+	public String getShortName() {
+		return shortName;
+	}
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
+	public boolean isService() {
+		return isService;
+	}
+	public void setService(boolean isService) {
+		this.isService = isService;
+	}
+	public String getImageName() {
+		return imageName;
+	}
+	public void setImageName(String imageName) {
+		this.imageName = imageName;
+	}
 	public String getActiveStr() {
 		return activeStr;
 	}

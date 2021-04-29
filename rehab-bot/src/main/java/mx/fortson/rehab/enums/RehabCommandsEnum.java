@@ -19,7 +19,7 @@ public enum RehabCommandsEnum {
 
 	GIFTCHUCK("!giftchuck [@mention] [amount]", "Allows you to give a gift chuck, it is a duel but the winnings to to the person mentioned, the person doing the command take the loss though.",ChannelsEnum.DUELARENA,true),
 	
-	FARM("!farm [x]","Allows you to go on an adventure with a chance at winning big. Optionally define how many farms you want to execute (max 15)",ChannelsEnum.FARMS, true),
+	FARM("!farm [x]","Allows you to go on an adventure with a chance at winning big. Optionally define how many farms you want to execute.",ChannelsEnum.FARMS, true),
 	
 	LDRBOARD("!leaderboard", "Shows you a list of all current degens and their bank values",ChannelsEnum.BOTCOMMANDS, true),
 	

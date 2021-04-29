@@ -93,7 +93,7 @@ public class RehabBot {
 		}
 	}
 
-	private static void initProperties(String file) throws FileNotFoundException, IOException {
+	public static void initProperties(String file) throws FileNotFoundException, IOException {
 		props = new Properties();
 		props.load(new FileInputStream(new File(file)));
 	}

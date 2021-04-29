@@ -231,6 +231,8 @@ public class DatabaseDegens {
 				item.setOwnerName(rs.getString(4));
 				item.setForSale(rs.getBoolean(5));
 				item.setValue(rs.getLong(6));
+				item.setImageName(rs.getString(7));
+				item.setService(false);
 				result.add(item);
 			}
 		}
@@ -351,14 +353,14 @@ public class DatabaseDegens {
 		return result;
 	}
 
-	public static List<ItemBean> getDegenServices(long discId) throws SQLException {
-		List<ItemBean> result = new ArrayList<>();
+	public static List<ServiceBean> getDegenServices(long discId) throws SQLException {
+		List<ServiceBean> result = new ArrayList<>();
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_SERVICES_BY_DISCID)){
 			stmt.setLong(1, discId);
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()) {
-				ItemBean item = new ItemBean();
+				ServiceBean item = new ServiceBean();
 				item.setItemID(rs.getLong(1));
 				item.setItemName(rs.getString(2));
 				item.setPrice(rs.getLong(3));
@@ -366,6 +368,9 @@ public class DatabaseDegens {
 				item.setForSale(rs.getBoolean(5));
 				item.setValue(rs.getLong(6));
 				item.setActiveStr(rs.getString(7));
+				item.setShortName(rs.getString(8));
+				item.setImageName(item.getActiveStr().equalsIgnoreCase("y") ? "/service.png" : "/inactiveservice.png");
+				item.setService(true);
 				result.add(item);
 			}
 		}
@@ -501,5 +506,18 @@ public class DatabaseDegens {
 			stmt.setInt(1, degenId);
 			stmt.executeUpdate();
 		}
+	}
+
+	public static List<String> getItemsFromType(int itemType) throws SQLException {
+		List<String> items = new ArrayList<>();
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_ITEM_NAMES_BY_TYPE)){
+			stmt.setLong(1, itemType);
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()) {
+				items.add(rs.getString(1));
+			}
+		}
+		return items;
 	}
 }

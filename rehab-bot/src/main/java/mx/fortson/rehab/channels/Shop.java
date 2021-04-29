@@ -10,6 +10,7 @@ import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
+import mx.fortson.rehab.utils.FormattingUtils;
 import mx.fortson.rehab.utils.MessageUtils;
 import mx.fortson.rehab.utils.ShopUtils;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -41,7 +42,7 @@ public class Shop implements IChannel{
 					if(contentSplit.length>1) {
 						if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
 							channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],author.getIdLong()),"",shopperRole.getIdLong())).queue();
-						}else if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && StringUtils.isNumeric(contentSplit[2])) {
+						}else if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && FormattingUtils.isValidAmount(contentSplit[2])) {
 							channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],contentSplit[2],author.getIdLong(),false),"",shopperRole.getIdLong())).queue();
 						}else {
 							channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
@@ -58,7 +59,7 @@ public class Shop implements IChannel{
 					}
 					break;
 				case SELLSERVICE:
-					if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && StringUtils.isNumeric(contentSplit[2])) {
+					if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && FormattingUtils.isValidAmount(contentSplit[2])) {
 						channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],contentSplit[2],author.getIdLong(),true),"",shopperRole.getIdLong())).queue();
 					}else {
 						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();

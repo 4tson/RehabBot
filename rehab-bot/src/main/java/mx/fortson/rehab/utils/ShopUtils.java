@@ -122,7 +122,7 @@ public class ShopUtils {
 			
 			if(service) {
 				ServiceBean serviceDB = DatabaseDegens.getServiceById(Long.parseLong(itemIdS));
-				if(serviceDB.getOwnerDiscordId().equals(discId) && !serviceDB.isForSale()) {
+				if(serviceDB.getOwnerDiscordId().equals(discId) && !serviceDB.isForSale() && !serviceDB.isActive()) {
 					DatabaseDegens.putServiceForSaleSetPrice(serviceDB.getServiceId(),FormattingUtils.parseAmount(priceS));
 					return true;
 				}

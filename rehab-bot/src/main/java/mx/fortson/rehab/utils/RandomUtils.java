@@ -38,6 +38,11 @@ public class RandomUtils {
 		int x = RANDOM.nextInt(possibleStrings.length);
         return possibleStrings[x];
 	}
+	
+	public static String randomStringFromList(List<String> possibleStrings) {
+		int x = RANDOM.nextInt(possibleStrings.size());
+		return possibleStrings.get(x);
+	}
 
 	public static int randomFreeFarm() {
 		return RANDOM.nextInt(3) + 1;

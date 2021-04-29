@@ -1,5 +1,6 @@
 package mx.fortson.rehab.utils;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,6 +15,7 @@ import mx.fortson.rehab.bean.DuelResultBean;
 import mx.fortson.rehab.bean.FarmCollectionBean;
 import mx.fortson.rehab.bean.FarmResultBean;
 import mx.fortson.rehab.bean.ItemBean;
+import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
 import mx.fortson.rehab.bean.ServiceBean;
@@ -111,9 +113,6 @@ public class MessageUtils {
 
 	public static PagedMessageBean getFarmResult(FarmCollectionBean farmCollectionBean, Long id) {
 		PagedMessageBean result = new PagedMessageBean();
-		
-		
-//		MessageUtilsResultBean result = new MessageUtilsResultBean();
 		List<FarmResultBean> leftovers = new ArrayList<>(farmCollectionBean.getFarms());
 		
 		if(!farmCollectionBean.isExists()) {
@@ -331,6 +330,21 @@ public class MessageUtils {
 		return sb.toString();
 	}
 
+	public static PagedImageMessageBean getInventoryImage(List<ItemBean> inventory, String name) {
+		
+		PagedImageMessageBean result = new PagedImageMessageBean();
+		try {
+			result = ImageUtils.generateInventoryImage(inventory,name);
+			result.setMoreRecords(!result.getLeftOverRecords().isEmpty());
+			result.setImageName(name + "_inv_" + System.currentTimeMillis() + ".png");
+		}catch(IOException e) {
+			e.printStackTrace();
+			result.setMessage("Could not generate inventory");
+		}
+		return result;
+	}
+	
+	
 	public static PagedMessageBean getInventory(List<ItemBean> inventory, String name) {
 		PagedMessageBean paging = new PagedMessageBean();
 		if(inventory.isEmpty()) {
@@ -541,7 +555,7 @@ public class MessageUtils {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Are you sure you want to cancel ")
 		.append(serviceBean.info())
-		.append("? You will not be refunded for this service. This action cannot be undone. Y/N");
+		.append("? You will not be refunded for this service. **This action cannot be undone.** Y/N");
 		return sb.toString();
 	}
 }

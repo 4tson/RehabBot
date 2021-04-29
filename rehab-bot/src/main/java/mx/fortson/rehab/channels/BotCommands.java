@@ -6,6 +6,7 @@ import java.util.List;
 import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.bean.Degen;
 import mx.fortson.rehab.bean.ItemBean;
+import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
@@ -73,13 +74,14 @@ public class BotCommands implements IChannel{
 			channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
 			break;
 		case INVENTORY:
-			PagedMessageBean pagingInv = MessageUtils.getInventory(InventoryUtils.getInventory(author.getIdLong()),author.getName());
+			PagedImageMessageBean result = MessageUtils.getInventoryImage(InventoryUtils.getInventory(author.getIdLong()),author.getName());
 			PrivateChannel pm = event.getAuthor().openPrivateChannel().complete();
-			while(pagingInv.isMoreRecords()) {
-				pm.sendMessage(pagingInv.getMessage()).allowedMentions(new ArrayList<>()).queue();
-				pagingInv = MessageUtils.getInventory((List<ItemBean>)(Object)pagingInv.getLeftOverRecords(),author.getName());
+			while(result.isMoreRecords()) {
+				pm.sendFile(result.getImageBytes(),result.getImageName()).queue();
+				result = MessageUtils.getInventoryImage((List<ItemBean>)(Object)result.getLeftOverRecords(),author.getName());
 			}
-			pm.sendMessage(pagingInv.getMessage()).allowedMentions(new ArrayList<>()).queue();
+			pm.sendFile(result.getImageBytes(), result.getImageName()).queue();
+			channel.sendMessage("Inventory sent via PM").queue();
 			break;
 		case FUNDS:
 			channel.sendMessage(MessageUtils.getUserFunds(FundUtils.getBankValue(author.getIdLong()), author.getName())).allowedMentions(new ArrayList<>()).queue();
