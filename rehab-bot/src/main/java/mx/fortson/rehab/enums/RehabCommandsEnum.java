@@ -31,6 +31,8 @@ public enum RehabCommandsEnum {
 	
 	BIDSERVICE("!bid [amount]", "Bids an amount of GP for the current service.",ChannelsEnum.BIDSERVICE, true),
 	
+	BUYSERVICESHOP("!buy [id]", "Buys one of the predetermined services in the shop.", ChannelsEnum.SERVICESSHOP, true),
+	
 	ACTIVATESERVICE("!activate [id]","Allows you to activate a service based on its ID",ChannelsEnum.SERVICES,true),
 	;
 	

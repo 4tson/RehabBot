@@ -62,8 +62,6 @@ public class RehabBot {
 				.setChunkingFilter(ChunkingFilter.ALL) // enable member chunking for all guilds
 		          .setMemberCachePolicy(MemberCachePolicy.ALL) // ignored if chunking enabled
 		          .enableIntents(GatewayIntent.GUILD_MEMBERS);
-		builder.addEventListeners(new MessageListener())
-		.addEventListeners(new LeaveListener());
 		try {
 			api = builder.build()
 			.awaitReady();
@@ -74,6 +72,8 @@ public class RehabBot {
 			if(isAnnounceUp()) {
 				announceUp();
 			}
+			getApi().addEventListener(new MessageListener());
+			getApi().addEventListener(new LeaveListener());
 		}catch(LoginException e) {
 			System.err.println("login error");
 			e.printStackTrace();
