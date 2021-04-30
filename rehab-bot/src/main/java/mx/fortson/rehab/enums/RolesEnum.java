@@ -4,6 +4,10 @@ public enum RolesEnum {
 
 	DEGEN("degen"),
 	IRONMAN("ironman"),
+	EVERYONE("@everyone"),
+	ANNOUNCEMENTS("announcements"),
+	SERVICES("services"),
+	SHOPPER("shopper"),
 	;
 	private String name;
 

@@ -8,9 +8,13 @@ public enum RehabCommandsEnum {
 	
 	FUNDS("!bank","Displays your current bank value.",ChannelsEnum.ALL, true),
 	
+	FARMS("!farms","Displays your current available farms.",ChannelsEnum.ALL, true),
+	
 	REGISTERDEGEN("!degen","Registers you as a degen. Degens have access to all features of the bot.",ChannelsEnum.BOTCOMMANDS, true),
 	
 	REGISTERIRON("!ironman","Registers you as an ironman. Ironmen have limited access to the bot's features.",ChannelsEnum.BOTCOMMANDS, true),
+	
+	ADDANNOUNCEMENTROLE("!announcements","Adds the announcement role. You will get pinged when there are any announcements.",ChannelsEnum.BOTCOMMANDS, true),
 	
 	DUEL("!duel [@mention] [amount]","Begins a duel, if you don't mention a person to duel you will stake a random from the arena. "
 							+ "Can only duel with available funds. If no amount is defined, a random amount will be staked from the available funds.",ChannelsEnum.DUELARENA, true),
@@ -50,6 +54,15 @@ public enum RehabCommandsEnum {
 	SELLSERVICE("!sellservice [id] [price]", "Lets you put a service for sale in the shop for other players based on its ID. You need to define a price.",ChannelsEnum.SHOP, true),
 	
 	BUY_SERVICE("!buyservice [id]", "Lets you buy a service based on its ID, provided you have the funds to do so.",ChannelsEnum.SHOP, true),
+	
+	HIGH("!high", "You bet that the next number is higher than the previous one.",ChannelsEnum.HIGHLOW, true),
+	
+	LOW("!low", "You bet that the next number is lower than the previous one.",ChannelsEnum.HIGHLOW, true),
+	
+	STATUSHIGHLOW("!status", "Check how many farms you are about to lose.",ChannelsEnum.HIGHLOW,true),
+	
+	CASHOUT("!cashout","Take your farms and get out of here.",ChannelsEnum.HIGHLOW,true),
+	
 	;
 	
 	

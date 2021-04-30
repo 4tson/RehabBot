@@ -1,3 +1,4 @@
+
 package mx.fortson.rehab.channels;
 
 import java.util.ArrayList;
@@ -10,6 +11,8 @@ import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
+import mx.fortson.rehab.enums.RolesEnum;
+import mx.fortson.rehab.utils.FarmUtils;
 import mx.fortson.rehab.utils.FundUtils;
 import mx.fortson.rehab.utils.InventoryUtils;
 import mx.fortson.rehab.utils.LeaderBoardUtils;
@@ -33,16 +36,26 @@ public class BotCommands implements IChannel{
 					case REGISTERDEGEN:
 						boolean registerSuccess = RehabBot.register(author.getIdLong(),author.getName(),false);
 						if(registerSuccess) {
-							event.getGuild().addRoleToMember(event.getMember(),  RehabBot.getOrCreateRole("degen")).queue();
+							event.getGuild().addRoleToMember(event.getMember(),  RehabBot.getOrCreateRole(RolesEnum.DEGEN)).queue();
 						}
 						channel.sendMessage(MessageUtils.getRegistrationMessage(registerSuccess,author.getName())).allowedMentions(new ArrayList<>()).queue();
 						break;
 					case REGISTERIRON:
 						boolean registerSuccessIron = RehabBot.register(author.getIdLong(),author.getName(),true);
 						if(registerSuccessIron) {
-							event.getGuild().addRoleToMember(event.getMember(), RehabBot.getOrCreateRole("ironman")).queue();
+							event.getGuild().addRoleToMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.IRONMAN)).queue();
 						}
 						channel.sendMessage(MessageUtils.getRegistrationMessage(registerSuccessIron,author.getName())).allowedMentions(new ArrayList<>()).queue();
+						break;
+					case ADDANNOUNCEMENTROLE:
+						String action = "added";
+						if(event.getMember().getRoles().contains(RehabBot.getOrCreateRole(RolesEnum.ANNOUNCEMENTS))) {
+							event.getGuild().removeRoleFromMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.ANNOUNCEMENTS)).queue();
+							action = "removed";
+						}else {
+							event.getGuild().addRoleToMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.ANNOUNCEMENTS)).queue();
+						}
+						channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(), RolesEnum.ANNOUNCEMENTS.getName(), action)).allowedMentions(new ArrayList<>()).queue();
 						break;
 					default:
 						commonCommands(ChannelsEnum.BOTCOMMANDS,commandEnum, event);
@@ -80,11 +93,14 @@ public class BotCommands implements IChannel{
 				pm.sendFile(result.getImageBytes(),result.getImageName()).queue();
 				result = MessageUtils.getInventoryImage((List<ItemBean>)(Object)result.getLeftOverRecords(),author.getName());
 			}
-			pm.sendFile(result.getImageBytes(), result.getImageName()).queue();
+			pm.sendMessage("Service Ids: " + result.getMessage()).addFile(result.getImageBytes(), result.getImageName()).queue();
 			channel.sendMessage("Inventory sent via PM").queue();
 			break;
 		case FUNDS:
 			channel.sendMessage(MessageUtils.getUserFunds(FundUtils.getBankValue(author.getIdLong()), author.getName())).allowedMentions(new ArrayList<>()).queue();
+			break;
+		case FARMS:
+			channel.sendMessage(MessageUtils.getuserFarms(FarmUtils.getFarms(author.getIdLong()), author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 			break;
 		default:
 			event.getMessage().delete().queue();

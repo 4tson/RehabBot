@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,7 +27,8 @@ public class ImageUtils {
 	static {
 		InputStream is = ImageUtils.class.getResourceAsStream(FontsEnum.OSRS.getFileName());
 		try {
-			osrsFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(15f);
+			osrsFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(20f);
+			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(osrsFont);
 		} catch (FontFormatException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -37,7 +39,6 @@ public class ImageUtils {
 	public static Font scaleFontToFit(String text, int width, Graphics g, Font pFont)
 	{
 	    float fontSize = pFont.getSize();
-	    System.out.println(fontSize);
 	    float fWidth = g.getFontMetrics(pFont).stringWidth(text);
 	    if(fWidth <= width) {
 	        return pFont;
@@ -50,6 +51,7 @@ public class ImageUtils {
 		PagedImageMessageBean result = new PagedImageMessageBean();
 		List<ItemBean> leftover = new ArrayList<>(inventory);
 		
+		StringBuilder sb = new StringBuilder();
 		
 		BufferedImage inventoryBase = ImageIO.read(ImageUtils.class.getResourceAsStream(ImagesEnum.INVENTORY.getFileName()));
 		
@@ -75,14 +77,11 @@ public class ImageUtils {
 			}
 			addItemId(combined.getGraphics(),String.valueOf(item.getItemID()),x,y,sizesX);
 			
-			
-			
-			
 			Long value = item.getValue();
 			totalValue = totalValue + value;
 			
 			graphic = combined.getGraphics();
-			BufferedImage originalImage = ImageIO.read(ImageUtils.class.getResourceAsStream("/items/" + item.getImageName()));
+			BufferedImage originalImage = ImageIO.read(ImageUtils.class.getResourceAsStream("/items" + item.getImageName().toLowerCase()));
 			int xIValue = (x + (sizesX/2)) - (originalImage.getWidth()/2);
 			int yIValue = (y + (sizesY/2)) - (originalImage.getHeight()/2);
 			graphic.drawImage(originalImage,xIValue,yIValue, null);
@@ -104,6 +103,10 @@ public class ImageUtils {
 				x = 10;
 				y = y + sizesY;
 			}
+			if(item.isService()) {
+				sb.append(item.getItemID())
+				.append(" ");
+			}
 			leftover.remove(item);
 			if(y >= ymax) {
 				break;
@@ -119,6 +122,7 @@ public class ImageUtils {
 		
 		result.setLeftOverRecords(leftover);
 		result.setImageBytes(baos.toByteArray());
+		result.setMessage(sb.toString());
 		return result;
 	}
 

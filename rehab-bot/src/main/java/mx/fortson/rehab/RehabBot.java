@@ -17,7 +17,9 @@ import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.bean.ServiceTimerTaskPair;
+import mx.fortson.rehab.enums.CategoriesEnum;
 import mx.fortson.rehab.enums.ChannelsEnum;
+import mx.fortson.rehab.enums.PredefinedServicesEnum;
 import mx.fortson.rehab.enums.RolesEnum;
 import mx.fortson.rehab.listeners.LeaveListener;
 import mx.fortson.rehab.listeners.MessageListener;
@@ -66,7 +68,10 @@ public class RehabBot {
 		try {
 			api = builder.build()
 			.awaitReady();
-			register(getApi().getSelfUser().getIdLong(),"Shop Owner",false);
+			Long botDiscId = getApi().getSelfUser().getIdLong();
+			if(register(botDiscId,"Shop Owner",false)) {
+				registerPredefinedServices(botDiscId);
+			}
 			guild = api.getGuildById(getGuildId());
 			initChannels();
 			clearAndRestartServices();
@@ -85,6 +90,18 @@ public class RehabBot {
 		
 	}
 	
+	private static void registerPredefinedServices(Long botDiscId) {
+		int degenId;
+		try {
+			degenId = DatabaseDegens.getDegenId(botDiscId);
+			for(PredefinedServicesEnum service : PredefinedServicesEnum.values()) {
+				DatabaseDegens.createPredService(service.getName(), service.getFarms(), service.getDurationHours(), service.getRate(), degenId);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private static void initChannels() {
 		for(ChannelsEnum channel : ChannelsEnum.values()) {
 			if(!channel.equals(ChannelsEnum.ALL)) {
@@ -98,7 +115,7 @@ public class RehabBot {
 		props.load(new FileInputStream(new File(file)));
 	}
 	
-	public static TextChannel getOrCreateChannel(String name, Category category, int slowmode, RolesEnum... roles){
+	public static TextChannel getOrCreateChannel(String name, Category category, int slowmode, RolesEnum[] permittedRoles, RolesEnum[] readOnlyRoles){
 		for(TextChannel channel : getGuild().getTextChannels()) {
 			if(channel.getName().equalsIgnoreCase(name)) {
 				return channel;
@@ -106,37 +123,47 @@ public class RehabBot {
 		}
 		System.out.println("Creating channel");
 		TextChannel createdChannel = getGuild().createTextChannel(name, category).setSlowmode(slowmode).complete();
-		if(roles.length>0) {
-			createdChannel.putPermissionOverride(getOrCreateRole("@everyone")).deny(Permission.VIEW_CHANNEL).complete();
-			for(RolesEnum role : roles) {
-				createdChannel.putPermissionOverride(getOrCreateRole(role.getName())).setAllow(Permission.VIEW_CHANNEL).complete();
-			}
+		createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
+		for(RolesEnum role : permittedRoles) {
+			createdChannel.putPermissionOverride(getOrCreateRole(role)).setAllow(Permission.VIEW_CHANNEL).complete();
+		}
+		for(RolesEnum role : readOnlyRoles) {
+			createdChannel.putPermissionOverride(getOrCreateRole(role)).deny(Permission.MESSAGE_WRITE).setAllow(Permission.VIEW_CHANNEL).complete();
 		}
 		return createdChannel;
 	}
 	
 	public static TextChannel getOrCreateChannel(ChannelsEnum channel){
-		return getOrCreateChannel(channel.getName(),getOrCreateCategory(channel.getCategory()),channel.getSlowmode(),channel.getPermitedRoles());
+		return getOrCreateChannel(channel.getName(),getOrCreateCategory(channel.getCategory()),channel.getSlowmode(),channel.getPermitedRoles(),channel.getReadOnlyRoles());
 	}
 
 
-	public static Category getOrCreateCategory(String name) {
+	public static Category getOrCreateCategory(CategoriesEnum category) {
+		return getOrCreateCategory(category.getName(), category.getPermitedRoles());
+	}
+
+	public static Category getOrCreateCategory(String name, RolesEnum[] permittedRoles) {
 		for(Category category : getGuild().getCategories()) {
 			if(category.getName().equalsIgnoreCase(name)) {
 				return category;
 			}
 		}
-		System.out.println("creating category");
-		return getGuild().createCategory(name).complete();
+		System.out.println("Creating category");
+		Category createdCategory = getGuild().createCategory(name).complete();
+		createdCategory.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
+		for(RolesEnum role : permittedRoles) {
+			createdCategory.putPermissionOverride(getOrCreateRole(role)).setAllow(Permission.VIEW_CHANNEL).complete();
+		}
+		return createdCategory;
 	}
 	
-	public static Role getOrCreateRole(String name) {
+	public static Role getOrCreateRole(RolesEnum degen) {
 		for(Role role : getGuild().getRoles()) {
-			if(role.getName().equalsIgnoreCase(name)) {
+			if(role.getName().equalsIgnoreCase(degen.getName())) {
 				return role;
 			}
 		}
-		return getGuild().createRole().setName(name).complete();
+		return getGuild().createRole().setName(degen.getName()).complete();
 	}
 	
 	private static String getGuildId() {
@@ -148,11 +175,13 @@ public class RehabBot {
 		TextChannel servicesShopChannel = getOrCreateChannel(ChannelsEnum.SERVICESSHOP);
 		{
 			TextChannel bidServicesChannel = getOrCreateChannel(ChannelsEnum.BIDSERVICE);
+			TextChannel highLowChannel = getOrCreateChannel(ChannelsEnum.HIGHLOW);
 			purgeChannel(bidServicesChannel);
+			purgeChannel(highLowChannel);
 			purgeChannel(servicesShopChannel);
 		}
 		
-		Category myServicesCat = getOrCreateCategory("my-services");
+		Category myServicesCat = getOrCreateCategory(CategoriesEnum.MYSERVICES);
 		//Delete all channels in "my-services"
 		myServicesCat.getTextChannels().forEach(a -> a.delete().complete());
 		
@@ -170,42 +199,43 @@ public class RehabBot {
 			for(ServiceBean runningService : runningServices) {
 				
 				Member member = getGuild().getMemberById(runningService.getOwnerDiscordId());
-				if(null==member) {
-					DatabaseDegens.deleteService(runningService.getServiceId());
-					continue;
+				if(null!=member) {
+					Long timeToRun = (long) (1000 * 60 * 60 * runningService.getLength());
+					Long expireTime = timeToRun + System.currentTimeMillis();
+					TextChannel createdChannel = myServicesCat.createTextChannel(runningService.getServiceId() + "-" + runningService.getName() + "-" + runningService.getOwnerName()).complete();
+					 
+					createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
+					createdChannel.putPermissionOverride(member).setAllow(Permission.VIEW_CHANNEL).complete();
+					
+					StringBuilder greeting = new StringBuilder();
+					greeting.append(runningService.info())
+					.append(" You can check the status at any time using !status");
+					createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
+					
+					ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, runningService.getServiceId());
+					Service serviceTask = new Service(runningService.getOwnerDiscordId(),
+							runningService.getName(),
+							runningService.getFarms(),
+							createdChannel.getIdLong(),
+							true,
+							runningService.getServiceId(),
+							sl,
+							expireTime);
+					
+					Timer serviceTimer = new Timer("Service-" + runningService.getServiceId() + "Timer");
+					serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * runningService.getInterval()));
+					
+					Timer kstTimer = new Timer("KillService-" + runningService.getServiceId() + "Timer");
+					KillServiceTask kst = new KillServiceTask(serviceTask);
+					kstTimer.schedule(kst, new Date(expireTime));
+					
+					ServicesUtils.addCancellableService(runningService.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
+				}else {
+//					DatabaseDegens.deleteService(runningService.getServiceId());
 				}
-				Long timeToRun = (long) (1000 * 60 * 60 * runningService.getLength());
-				Long expireTime = timeToRun + System.currentTimeMillis();
-				TextChannel createdChannel = myServicesCat.createTextChannel(runningService.getServiceId() + "-" + runningService.getName() + "-" + runningService.getOwnerName()).complete();
-				 
-				createdChannel.putPermissionOverride(getOrCreateRole("@everyone")).deny(Permission.VIEW_CHANNEL).complete();
-				createdChannel.putPermissionOverride(member).setAllow(Permission.VIEW_CHANNEL).complete();
-				
-				StringBuilder greeting = new StringBuilder();
-				greeting.append(runningService.info())
-				.append(" You can check the status at any time using !status");
-				createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
-				
-				ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, runningService.getServiceId());
-				Service serviceTask = new Service(runningService.getOwnerDiscordId(),
-						runningService.getName(),
-						runningService.getFarms(),
-						createdChannel.getIdLong(),
-						true,
-						runningService.getServiceId(),
-						sl);
-				
-				Timer serviceTimer = new Timer("Service-" + runningService.getServiceId() + "Timer");
-				serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * runningService.getInterval()));
-				
-				Timer kstTimer = new Timer("KillService-" + runningService.getServiceId() + "Timer");
-				KillServiceTask kst = new KillServiceTask(serviceTask);
-				kstTimer.schedule(kst, new Date(expireTime));
-				
-				ServicesUtils.addCancellableService(runningService.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
 			}
 			//We create the new services service
-			ServicesUtils.createNewService();
+			ServicesUtils.restoreBiddableService();
 		}catch(SQLException e) {
 			e.printStackTrace();
 		}
@@ -224,7 +254,7 @@ public class RehabBot {
 	}
 
 	public static void announceUp() {
-		getOrCreateChannel("general", null,0).sendMessage("@here the bot is now up. !degen if you can't see channels.").queue();
+		getOrCreateChannel(ChannelsEnum.ANNOUNCEMENTS).sendMessage("<@&" + getOrCreateRole(RolesEnum.ANNOUNCEMENTS).getIdLong() + "> the bot is now up. !degen if you can't see channels.").queue();
 	}
 	
 	public static boolean register(long id, String name, boolean iron) {

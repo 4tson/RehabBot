@@ -34,7 +34,7 @@ public class FarmUtils {
 					for(int i = 0; i<farms; i++) {
 						FarmResultBean farmResultBean = new FarmResultBean();
 						newAttempts = newAttempts -1;
-						int itemType = 0;
+						int itemType = 1;
 						FarmResultEnum farmResult = RandomUtils.randomFarmEnum();
 						farmResultBean.setType(farmResult.getType());					
 						farmResultBean.setFlavourText(RandomUtils.randomStringFromArray(farmResult.getFlavourTexts()));
@@ -108,6 +108,17 @@ public class FarmUtils {
 			e.printStackTrace();
 		}
 		return 0;
+	}
+
+	public static int getFarms(long idLong) {
+		try {
+			if(DatabaseDegens.existsById(idLong)) {	
+				return DatabaseDegens.getFarmAtts(idLong);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 	
 }

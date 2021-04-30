@@ -48,8 +48,9 @@ public class ServiceStateMachine extends ListenerAdapter{
 						biddableService.getFarms(),
 						servicesChannel.getIdLong(),
 						false,
-						0,
-						sl);
+						ServicesUtils.BIDDABLE_SERVICE_ID,
+						sl,
+						expireTime);
 				
 				Timer serviceTimer = new Timer("ServiceTimer");
 				serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * biddableService.getIntervalMinutes()));
@@ -60,6 +61,7 @@ public class ServiceStateMachine extends ListenerAdapter{
 				
 				//We announce that the bid is over
 				servicesChannel.sendMessage(MessageUtils.announceBidEnd(biddableService)).queue();
+				ServicesUtils.updateBiddableService(biddableService);
 				bidTask.cancel();
 				removeListener();
 			}

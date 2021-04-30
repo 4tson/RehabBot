@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import mx.fortson.rehab.bean.BiddableServiceBean;
 import mx.fortson.rehab.bean.ItemBean;
+import mx.fortson.rehab.bean.PlayerWinsBean;
 import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.constants.DBQueriesConstants;
 import mx.fortson.rehab.constants.RehabBotConstants;
@@ -519,5 +522,124 @@ public class DatabaseDegens {
 			}
 		}
 		return items;
+	}
+
+	public static void insertHighLowState(Map<Long, PlayerWinsBean> playersWins) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.INSERT_HIGHLOWSTATE)){
+			for(Entry<Long,PlayerWinsBean> entry : playersWins.entrySet()) {
+				stmt.setInt(1, getDegenId(entry.getKey()));
+				stmt.setInt(2, entry.getValue().getCurrentFarms());
+				stmt.setDouble(3, entry.getValue().getRate());
+				stmt.addBatch();
+			}
+			stmt.executeBatch();
+		}
+	}
+
+	public static Map<Long, PlayerWinsBean> selectHighLowState() throws SQLException {
+		Map<Long, PlayerWinsBean> state = new HashMap<>();
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_HIGHLOWSTATE)){
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()) {
+				state.put(rs.getLong(1), new PlayerWinsBean(rs.getInt(2),rs.getFloat(3)));
+			}
+		}
+		return state;
+	}
+
+	public static void clearHighLowState() throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.DELETE_HIGHLOWSTATE)){
+			stmt.executeUpdate();
+		}
+	}
+
+	public static void updateService(int serviceID, Double timeLeft) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.UPDATE_SERVICE_LENGTH)){
+			stmt.setDouble(1, timeLeft);
+			stmt.setInt(2, serviceID);
+			stmt.executeUpdate();
+		}
+	}
+
+	public static ServiceBean selectBiddableService() throws SQLException {
+		ServiceBean result = null;
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_BIDDABLE_SERVICE)){
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				result = new ServiceBean();
+				result.setServiceId(rs.getInt(1));
+				result.setItemID(Long.valueOf(result.getServiceId()));
+				result.setFarms(rs.getInt(2));
+				result.setLength(rs.getDouble(3));
+				result.setName(rs.getString(4));
+				result.setInterval(rs.getInt(5));
+				result.setForSale(rs.getBoolean(6));
+				result.setActive(rs.getBoolean(7));
+				result.setDegenID(rs.getInt(8));
+				result.setOwnerDiscordId(rs.getLong(9));
+				result.setPrice(rs.getLong(10));
+				result.setOwnerName(rs.getString(11));
+			}
+		}
+		return result;
+	}
+
+	public static int getBiddableServiceId() throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.GET_BIDDABLE_SERVICE_ID)){
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+		return 0;
+	}
+
+	public static void updateBiddable(BiddableServiceBean biddableService) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.UPDATE_BIDDABLE_SERVICE)){
+			stmt.setInt(1, biddableService.getFarms());
+			stmt.setDouble(2,biddableService.getLengthHours());
+			stmt.setString(3, biddableService.getServiceName());
+			stmt.setInt(4, biddableService.getIntervalMinutes());
+			stmt.setInt(5, getDegenId(biddableService.getWinnerID()));
+			stmt.executeUpdate();
+		}
+	}
+
+	public static void updateBiddableActive() throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.UPDATE_BIDDABLE_SERVICE_ACTIVE)){
+			stmt.executeUpdate();
+		}
+	}
+
+	public static int getFarmAtts(long idLong) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_FARMS)){
+			stmt.setLong(1, idLong);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+		return 0;
+	}
+
+	public static void createPredService(String name, int farms, double durationHours, int rate, int degenId) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.INSERT_PREDETERMINED_SERVICE)){
+			stmt.setInt(1, farms);
+			stmt.setDouble(2,durationHours);
+			stmt.setString(3, name);
+			stmt.setInt(4, rate);
+			stmt.setInt(5, degenId);
+			stmt.executeUpdate();
+		}
 	}
 }

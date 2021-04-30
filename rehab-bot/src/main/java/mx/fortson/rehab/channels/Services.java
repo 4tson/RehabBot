@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
+import mx.fortson.rehab.enums.RolesEnum;
 import mx.fortson.rehab.utils.MessageUtils;
 import mx.fortson.rehab.utils.ServicesUtils;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -19,7 +20,7 @@ public class Services implements IChannel {
 	private static Role servicesRole;
 	
 	static {
-		servicesRole = RehabBot.getOrCreateRole("services");
+		servicesRole = RehabBot.getOrCreateRole(RolesEnum.SERVICES);
 	}
 	
 	@Override

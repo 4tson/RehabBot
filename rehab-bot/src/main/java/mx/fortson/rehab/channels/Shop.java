@@ -10,6 +10,7 @@ import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
+import mx.fortson.rehab.enums.RolesEnum;
 import mx.fortson.rehab.utils.FormattingUtils;
 import mx.fortson.rehab.utils.MessageUtils;
 import mx.fortson.rehab.utils.ShopUtils;
@@ -22,7 +23,7 @@ public class Shop implements IChannel{
 
 	@SuppressWarnings("unchecked")
 	public void processMessage(GuildMessageReceivedEvent event) {
-		Role shopperRole = RehabBot.getOrCreateRole("shopper");
+		Role shopperRole = RehabBot.getOrCreateRole(RolesEnum.SHOPPER);
 		String messageContent = event.getMessage().getContentRaw();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();

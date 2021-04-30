@@ -558,4 +558,19 @@ public class MessageUtils {
 		.append("? You will not be refunded for this service. **This action cannot be undone.** Y/N");
 		return sb.toString();
 	}
+
+	public static CharSequence getuserFarms(int farms, Long id) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(id)
+		.append(">");
+		if(farms<0) {
+			sb.append(" is not registered. Please run `!degen` or `!ironman` to register.");
+		}else {
+			sb.append(" has `")
+			.append(farms)
+			.append("` farm(s) available. Is that a lot?");
+		}
+		return sb.toString();
+	}
 }

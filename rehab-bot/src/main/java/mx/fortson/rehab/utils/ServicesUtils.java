@@ -15,7 +15,9 @@ import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
 import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.bean.ServiceTimerTaskPair;
 import mx.fortson.rehab.constants.RehabBotConstants;
+import mx.fortson.rehab.enums.CategoriesEnum;
 import mx.fortson.rehab.enums.ChannelsEnum;
+import mx.fortson.rehab.enums.RolesEnum;
 import mx.fortson.rehab.listeners.ServiceListener;
 import mx.fortson.rehab.listeners.ServiceStateMachine;
 import mx.fortson.rehab.tasks.KillServiceTask;
@@ -25,7 +27,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 public class ServicesUtils {
 	
 	private static Map<Integer,ServiceTimerTaskPair> runningServices;
-	
+	public static int BIDDABLE_SERVICE_ID;
 	
 	static{
 		runningServices = new HashMap<>();
@@ -41,14 +43,7 @@ public class ServicesUtils {
 			runningServices.remove(serviceId,timerTaskPair);
 		}
 	}
-	
-	public static void createNewService() {
-		BiddableServiceBean biddableService = new BiddableServiceBean();
-		TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
-		servicesChannel.getManager().setSlowmode(0).queue();
-		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getOrCreateRole("services").getIdLong())).queue();
-		RehabBot.getApi().addEventListener(new ServiceStateMachine(biddableService));
-	}
+
 
 	public static boolean bid(long discID, Long bidAmount) {
 		try {
@@ -150,12 +145,12 @@ public class ServicesUtils {
 		//everything is good, let's enable it
 		Long timeToRun = (long) (1000 * 60 * 60 * service.getLength());
 		Long expireTime = timeToRun + System.currentTimeMillis();
-		TextChannel createdChannel = RehabBot.getOrCreateChannel(service.getServiceId() + "-" + service.getName() + "-" + service.getOwnerName(),RehabBot.getOrCreateCategory("my-services"),0);
+		TextChannel createdChannel = RehabBot.getOrCreateChannel(service.getServiceId() + "-" + service.getName() + "-" + service.getOwnerName(),RehabBot.getOrCreateCategory(CategoriesEnum.MYSERVICES),0, new RolesEnum[] {}, new RolesEnum[] {});
 		StringBuilder greeting = new StringBuilder();
 		greeting.append(service.info())
 		.append(" You can check the status at any time using !status");
 		createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
-		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole("@everyone")).deny(Permission.VIEW_CHANNEL).complete();
+		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
 		createdChannel.putPermissionOverride(createdChannel.getGuild().getMemberById(service.getOwnerDiscordId())).setAllow(Permission.VIEW_CHANNEL).complete();
 		ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, service.getServiceId());
 		
@@ -165,7 +160,8 @@ public class ServicesUtils {
 				createdChannel.getIdLong(),
 				true,
 				service.getServiceId(),
-				sl);
+				sl,
+				expireTime);
 		
 		Timer serviceTimer = new Timer("Service-" + service.getServiceId() + "Timer");
 		serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * service.getInterval()));
@@ -188,6 +184,80 @@ public class ServicesUtils {
 			e.printStackTrace();
 		}
 		return service;
+	}
+
+	public static void updateServiceTimeLeft(int serviceID, Double timeLeft) {
+		try {
+			DatabaseDegens.updateService(serviceID, timeLeft);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	
+	public static void createNewService() {
+		BiddableServiceBean biddableService = new BiddableServiceBean();
+		TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
+		servicesChannel.getManager().setSlowmode(0).queue();
+		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getOrCreateRole(RolesEnum.SERVICES).getIdLong())).queue();
+		RehabBot.getApi().addEventListener(new ServiceStateMachine(biddableService));
+	}
+	
+	public static void restoreBiddableService() {
+		try {
+			ServiceBean biddableService = DatabaseDegens.selectBiddableService();
+			BIDDABLE_SERVICE_ID = DatabaseDegens.getBiddableServiceId();
+			if(biddableService!=null) {
+				Long timeToRun = (long) (1000 * 60 * 60 * biddableService.getLength());
+				Long expireTime = timeToRun + System.currentTimeMillis();
+				TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
+				
+				ServiceListener sl = new ServiceListener(servicesChannel.getIdLong(), expireTime, 0);
+				
+				Service serviceTask = new Service(biddableService.getOwnerDiscordId(),
+						biddableService.getName(),
+						biddableService.getFarms(),
+						servicesChannel.getIdLong(),
+						false,
+						BIDDABLE_SERVICE_ID,
+						sl,
+						expireTime);
+				
+				Timer serviceTimer = new Timer("ServiceTimer");
+				serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * biddableService.getInterval()));
+				
+				Timer kstTimer = new Timer("KillService-BiddableTimer");
+				KillServiceTask kst = new KillServiceTask(serviceTask);
+				kstTimer.schedule(kst, new Date(expireTime));
+				servicesChannel.sendMessage(biddableService.info()).allowedMentions(new ArrayList<>()).queue();
+			}else {
+				//The biddable service was not active so we just create a new one same as always
+				createNewService();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	public static void updateBiddableService(BiddableServiceBean biddableService) {
+		try {
+			DatabaseDegens.updateBiddable(biddableService);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+	public static void updateBiddableServiceActive() {
+		try {
+			DatabaseDegens.updateBiddableActive();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
