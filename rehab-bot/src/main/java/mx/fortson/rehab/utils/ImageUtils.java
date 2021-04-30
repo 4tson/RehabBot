@@ -7,8 +7,9 @@ import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,9 +26,8 @@ public class ImageUtils {
 	private static Font osrsFont;
 	
 	static {
-		InputStream is = ImageUtils.class.getResourceAsStream(FontsEnum.OSRS.getFileName());
 		try {
-			osrsFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(20f);
+			osrsFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(new File("." + FontsEnum.OSRS.getFileName()))).deriveFont(15f);
 			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(osrsFont);
 		} catch (FontFormatException e) {
 			e.printStackTrace();
@@ -50,8 +50,6 @@ public class ImageUtils {
 	public static PagedImageMessageBean generateInventoryImage(List<ItemBean> inventory, String name) throws IOException {
 		PagedImageMessageBean result = new PagedImageMessageBean();
 		List<ItemBean> leftover = new ArrayList<>(inventory);
-		
-		StringBuilder sb = new StringBuilder();
 		
 		BufferedImage inventoryBase = ImageIO.read(ImageUtils.class.getResourceAsStream(ImagesEnum.INVENTORY.getFileName()));
 		
@@ -103,10 +101,6 @@ public class ImageUtils {
 				x = 10;
 				y = y + sizesY;
 			}
-			if(item.isService()) {
-				sb.append(item.getItemID())
-				.append(" ");
-			}
 			leftover.remove(item);
 			if(y >= ymax) {
 				break;
@@ -122,7 +116,6 @@ public class ImageUtils {
 		
 		result.setLeftOverRecords(leftover);
 		result.setImageBytes(baos.toByteArray());
-		result.setMessage(sb.toString());
 		return result;
 	}
 

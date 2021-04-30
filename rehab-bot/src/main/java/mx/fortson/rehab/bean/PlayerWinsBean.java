@@ -37,16 +37,18 @@ public class PlayerWinsBean {
 		}else{
 			this.currentFarms = (int) (Math.ceil(this.currentFarms * this.rate));
 		}
-		this.rate = 2;
+		if(this.rate < 2) {
+			this.rate = this.rate + .10;
+		}
 	}
 
 	public void lowerRate() {
-		if(this.rate>.1) {
-			this.rate = this.rate -.1;
+		if(this.rate>.30) {
+			this.rate = this.rate -.30;
 		}
 	}
 
 	public int cashOut() {
-		return (int) (Math.ceil(this.currentFarms * this.rate));
+		return this.currentFarms;
 	}	
 }
