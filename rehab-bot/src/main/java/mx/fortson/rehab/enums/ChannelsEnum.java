@@ -20,7 +20,7 @@ public enum ChannelsEnum {
 	SERVICESSHOP("services-shop",CategoriesEnum.SERVICES,new ServicesShop(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	SERVICES("services",CategoriesEnum.SERVICES,new Services(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	BIDSERVICE("bidding-services",CategoriesEnum.SERVICES,null,0,new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{}),
-	SHOP("shop",CategoriesEnum.SHOP,new Shop(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),		
+	SHOP("shop",CategoriesEnum.SHOP,new Shop(),0,new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[] {}),		
 	FARMS("farms",CategoriesEnum.FARMS,new Farms(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	FREEFARMS("free-farms",CategoriesEnum.FARMS,new FreeFarms(),120,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	ALL("",null,null,0,null,null)

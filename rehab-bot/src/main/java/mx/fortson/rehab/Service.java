@@ -3,6 +3,7 @@ package mx.fortson.rehab;
 import java.util.ArrayList;
 import java.util.TimerTask;
 
+import mx.fortson.rehab.bean.BiddableServiceBean;
 import mx.fortson.rehab.listeners.ServiceListener;
 import mx.fortson.rehab.utils.FarmUtils;
 import mx.fortson.rehab.utils.MessageUtils;
@@ -49,7 +50,7 @@ public class Service extends TimerTask {
 		if(!delete) {
 			RehabBot.getApi().getGuildChannelById(channelId).getManager().setSlowmode(0).complete();
 			ServicesUtils.updateBiddableServiceActive();
-			ServicesUtils.createNewService();
+			ServicesUtils.createNewService(new BiddableServiceBean());
 		}
 		if(delete) {
 			ServicesUtils.deleteService(serviceID);
@@ -59,5 +60,10 @@ public class Service extends TimerTask {
 		cancel();
 	}
 	
-	
+	public void stopService() {
+		System.out.println("Removing channel for service " + serviceID + " due to stoppage");
+		RehabBot.getApi().getTextChannelById(channelId).delete().queue();
+		RehabBot.getApi().removeEventListener(sl);
+		cancel();
+	}
 }

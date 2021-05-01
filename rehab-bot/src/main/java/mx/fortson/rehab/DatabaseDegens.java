@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mx.fortson.rehab.bean.BiddableServiceBean;
+import mx.fortson.rehab.bean.DegenBean;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PlayerWinsBean;
 import mx.fortson.rehab.bean.ServiceBean;
@@ -30,13 +31,13 @@ public class DatabaseDegens {
 		}
 	}
 
-	public static boolean insertNewDegen(long id, String name, boolean iron) throws SQLException {
+	public static int insertNewDegen(long id, String name, boolean iron) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.INSERT_NEW_DEGEN)){
 			stmt.setLong(1,id);
 			stmt.setString(2, name);
 			stmt.setBoolean(3, iron);
-			return stmt.executeUpdate() == 1;
+			return stmt.executeUpdate();
 		}
 	}
 	public static Long getInitialFunds() throws SQLException {
@@ -184,12 +185,13 @@ public class DatabaseDegens {
 	}
 
 	public static ItemBean getShopItemById(Long itemID) throws SQLException {
-		ItemBean result = new ItemBean();
+		ItemBean result = null;
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_ITEM_BY_ID)){
 			stmt.setLong(1, itemID);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
+				result = new ItemBean();
 				result.setItemID(rs.getLong(1));
 				result.setItemName(rs.getString(2));
 				result.setDegenID(rs.getInt(3));
@@ -384,6 +386,7 @@ public class DatabaseDegens {
 		List<ItemBean> result = new ArrayList<>();
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_PRED_SERVICES)){
+			stmt.setLong(1, RehabBot.getBotId());
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()) {
 				ItemBean item = new ItemBean();
@@ -674,5 +677,89 @@ public class DatabaseDegens {
 			stmt.setInt(1, degenId);
 			return stmt.executeUpdate() == 1;
 		}
+	}
+
+	public static List<Integer> getDegenActiveServicesId(int degenId) throws SQLException {
+		List<Integer> serviceIds = new ArrayList<>();
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_DEGEN_ACTIVE_SERVICEIDS)){
+			stmt.setInt(1, degenId);
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()) {
+				serviceIds.add(rs.getInt(1));
+			}
+		}
+		return serviceIds;
+	}
+
+	public static void insertBiddableService(BiddableServiceBean biddableService) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.INSERT_BIDDABLE_SERVICE)){
+			stmt.setInt(1, biddableService.getFarms());
+			stmt.setDouble(2,biddableService.getLengthHours());
+			stmt.setString(3, biddableService.getServiceName());
+			stmt.setInt(4, biddableService.getIntervalMinutes());
+			stmt.setInt(5, getDegenId(biddableService.getWinnerID()));
+			stmt.executeUpdate();
+		}
+	}
+
+	public static ServiceBean selectDegenPredService(int degenId) throws SQLException {
+		ServiceBean result = null;
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_DEGEN_PRED_SERVICE)){
+			stmt.setInt(1, degenId);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				result = new ServiceBean();
+				result.setServiceId(rs.getInt(1));
+				result.setItemID(Long.valueOf(result.getServiceId()));
+				result.setFarms(rs.getInt(2));
+				result.setLength(rs.getDouble(3));
+				result.setName(rs.getString(4));
+				result.setInterval(rs.getInt(5));
+				result.setForSale(rs.getBoolean(6));
+				result.setActive(rs.getBoolean(7));
+				result.setDegenID(rs.getInt(8));
+				result.setOwnerDiscordId(rs.getLong(9));
+				result.setPrice(rs.getLong(10));
+				result.setOwnerName(rs.getString(11));
+			}
+		}
+		return result;
+	}
+
+	public static boolean existsInactive(long id) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.COUNT_INACTIVE_DISC_ID)){
+			stmt.setLong(1, id);
+			ResultSet rs = stmt.executeQuery();
+			rs.next();
+			return rs.getInt(1) == 1;
+		}
+	}
+
+	public static boolean reactivateDegen(int degenId) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.REACTIVATE_DEGEN)){
+			stmt.setInt(1, degenId);
+			return stmt.executeUpdate() == 1;
+		}
+	}
+
+	public static DegenBean getDegen(long id) throws SQLException {
+		DegenBean result = null;
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_DEGEN)){
+			stmt.setLong(1, id);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				result = new DegenBean();
+				result.setDegenId(rs.getInt(1));
+				result.setIronman(rs.getBoolean(2));
+				result.setActive(rs.getBoolean(3));
+			}
+		}
+		return result;
 	}
 }

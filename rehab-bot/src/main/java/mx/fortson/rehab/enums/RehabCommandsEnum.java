@@ -10,7 +10,9 @@ public enum RehabCommandsEnum {
 	
 	FARMS("!farms","Displays your current available farms.",ChannelsEnum.ALL, true),
 	
-	DEACTIVATE("!inactive","Changes your status to inactive. You can come back at any time with `!degen` or `!ironman`",ChannelsEnum.BOTCOMMANDS, true),
+	DEACTIVATE("!inactive","Removes your rolls and stops all your running services. You can come back at any time with `!degen` or `!ironman`",ChannelsEnum.BOTCOMMANDS, true),
+	
+	WIPE("!wipe","Deletes all your data, you can still come back at any time. **THIS ACTION CANNOT BE UNDONE**",ChannelsEnum.BOTCOMMANDS, true),
 	
 	REGISTERDEGEN("!degen","Registers you as a degen. Degens have access to all features of the bot.",ChannelsEnum.BOTCOMMANDS, true),
 	

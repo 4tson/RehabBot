@@ -82,9 +82,11 @@ public class ShopUtils {
 		try {
 			
 			ItemBean itemDB = DatabaseDegens.getShopItemById(Long.parseLong(itemIdS));
-			if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
-				DatabaseDegens.updateItemForSale(itemDB.getItemID());
-				return true;
+			if(itemDB!=null) {
+				if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
+					DatabaseDegens.updateItemForSale(itemDB.getItemID());
+					return true;
+				}
 			}
 		}catch(SQLException e) {	
 			e.printStackTrace();
@@ -96,9 +98,11 @@ public class ShopUtils {
 		try {
 			
 			ItemBean itemDB = DatabaseDegens.getShopItemById(Long.parseLong(itemIdS));
-			if(itemDB.getOwnerDiscordId().equals(discId) && itemDB.isForSale()) {
-				DatabaseDegens.updateItemForSale(itemDB.getItemID());
-				return true;
+			if(itemDB!=null) {
+				if(itemDB.getOwnerDiscordId().equals(discId) && itemDB.isForSale()) {
+					DatabaseDegens.updateItemForSale(itemDB.getItemID());
+					return true;
+				}
 			}
 		}catch(SQLException e) {	
 			e.printStackTrace();
@@ -128,9 +132,11 @@ public class ShopUtils {
 				}
 			}else {
 				ItemBean itemDB = DatabaseDegens.getShopItemById(Long.parseLong(itemIdS));
-				if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
-					DatabaseDegens.putItemForSaleSetPrice(itemDB.getItemID(),FormattingUtils.parseAmount(priceS));
-					return true;
+				if(itemDB!=null) {
+					if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
+						DatabaseDegens.putItemForSaleSetPrice(itemDB.getItemID(),FormattingUtils.parseAmount(priceS));
+						return true;
+					}
 				}
 			}
 		}catch(SQLException e) {	

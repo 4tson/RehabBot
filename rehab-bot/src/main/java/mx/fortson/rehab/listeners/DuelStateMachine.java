@@ -44,6 +44,7 @@ public class DuelStateMachine extends ListenerAdapter {
 		        		channel.sendMessage(MessageUtils.getDuelResult(DuelUtils.duel(challengerId,challengedId,amount))).allowedMentions(new ArrayList<>()).queue();
 		        		event.getJDA().removeEventListener(this);
 		        		timer.cancel();
+		        		timer.purge();
 		        	}
 	        	}
 	        }

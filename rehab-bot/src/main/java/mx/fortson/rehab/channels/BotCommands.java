@@ -10,8 +10,10 @@ import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
+import mx.fortson.rehab.enums.RegisterResultEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
 import mx.fortson.rehab.enums.RolesEnum;
+import mx.fortson.rehab.listeners.WipeStateMachine;
 import mx.fortson.rehab.utils.FarmUtils;
 import mx.fortson.rehab.utils.FundUtils;
 import mx.fortson.rehab.utils.InventoryUtils;
@@ -35,21 +37,26 @@ public class BotCommands implements IChannel{
 				if(null!=commandEnum) {
 					switch(commandEnum) {
 					case REGISTERDEGEN:
-						boolean registerSuccess = RehabBot.register(author.getIdLong(),author.getName(),false);
-						if(registerSuccess) {
+						RegisterResultEnum registerResult = RehabBot.register(author.getIdLong(),author.getName(),false);
+						if(registerResult.equals(RegisterResultEnum.SUCCESS) || registerResult.equals(RegisterResultEnum.REACTIVATE)) {
 							event.getGuild().addRoleToMember(event.getMember(),  RehabBot.getOrCreateRole(RolesEnum.DEGEN)).queue();
 						}
-						channel.sendMessage(MessageUtils.getRegistrationMessage(registerSuccess,author.getName())).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.getRegistrationMessage(registerResult,author.getName())).allowedMentions(new ArrayList<>()).queue();
 						break;
 					case REGISTERIRON:
-						boolean registerSuccessIron = RehabBot.register(author.getIdLong(),author.getName(),true);
-						if(registerSuccessIron) {
+						RegisterResultEnum registerResultIron = RehabBot.register(author.getIdLong(),author.getName(),true);
+						if(registerResultIron.equals(RegisterResultEnum.SUCCESS) || registerResultIron.equals(RegisterResultEnum.REACTIVATE)) {
 							event.getGuild().addRoleToMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.IRONMAN)).queue();
 						}
-						channel.sendMessage(MessageUtils.getRegistrationMessage(registerSuccessIron,author.getName())).allowedMentions(new ArrayList<>()).queue();
+						channel.sendMessage(MessageUtils.getRegistrationMessage(registerResultIron,author.getName())).allowedMentions(new ArrayList<>()).queue();
 						break;
 					case DEACTIVATE:
-						channel.sendMessage(MessageUtils.getDeactivationMessage(RehabBot.deactivateDegen(author.getIdLong()),author.getIdLong()));
+						channel.sendMessage(MessageUtils.getDeactivationMessage(RehabBot.deactivateDegen(author.getIdLong()),author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
+						break;
+					case WIPE:
+						String confirmString = author.getName() + "wIpE";
+						channel.sendMessage(MessageUtils.confirmWipe(author.getIdLong(),confirmString)).complete();
+					    RehabBot.getApi().addEventListener(new WipeStateMachine(author.getIdLong(),confirmString,event.getMessageIdLong()));
 						break;
 					case ADDANNOUNCEMENTROLE:
 						String action = "added";
@@ -92,13 +99,13 @@ public class BotCommands implements IChannel{
 			break;
 		case INVENTORY:
 			int imageCount = 0;
-			PagedImageMessageBean result = MessageUtils.getInventoryImage(InventoryUtils.getInventory(author.getIdLong()),author.getName(),imageCount);
+			PagedImageMessageBean result = MessageUtils.getInventoryImage(InventoryUtils.getInventory(author.getIdLong()),author.getName());
 			PrivateChannel pm = event.getAuthor().openPrivateChannel().complete();
 			MessageAction messageAction = pm.sendMessage("Here is your inventory.");
 			while(result.isMoreRecords()) {
 				imageCount++;
 				messageAction = messageAction.addFile(result.getImageBytes(),result.getImageName());
-				result = MessageUtils.getInventoryImage((List<ItemBean>)(Object)result.getLeftOverRecords(),author.getName(),imageCount);
+				result = MessageUtils.getInventoryImage((List<ItemBean>)(Object)result.getLeftOverRecords(),author.getName());
 				if(imageCount==10) {
 					messageAction.complete();
 					messageAction = pm.sendMessage("And anotha one.");

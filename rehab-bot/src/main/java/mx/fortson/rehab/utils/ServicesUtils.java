@@ -33,7 +33,7 @@ public class ServicesUtils {
 		runningServices = new HashMap<>();
 	}
 	
-	public static void stopService(int serviceId) {
+	public static void endService(int serviceId) {
 		ServiceTimerTaskPair timerTaskPair = runningServices.get(serviceId);
 		if(null!=timerTaskPair) {
 			timerTaskPair.getKst().cancel();
@@ -117,10 +117,12 @@ public class ServicesUtils {
 	public static PredeterminedServiceSaleBean buyPredeterminedService(int serviceId, long idLong) {
 		PredeterminedServiceSaleBean result = new PredeterminedServiceSaleBean();
 		try {
-			
-			
 			ServiceBean service = DatabaseDegens.getPredeterminedService(serviceId);
-			if(null!=service) {
+			if(DatabaseDegens.getActiveServicesCount()==50) {
+				result.setFlavourText("There are too many active services right now. Please wait for another service to finish.");
+			}else if(DatabaseDegens.getUserActiveServicesCount(DatabaseDegens.getDegenId(idLong))>=5) {
+				result.setFlavourText("You have reached your limit of 5 active services. Either wait for one of them to finish or `!cancel` it.");
+			}else if(null!=service) {
 				Long degenFunds = DatabaseDegens.getFundsById(idLong);
 				if(degenFunds>service.getPrice()) {
 					int userPredServices = DatabaseDegens.countDegenPredService(idLong);
@@ -133,7 +135,7 @@ public class ServicesUtils {
 						result.setSale(true);
 						result.setService(createdService);
 					}else {
-						result.setFlavourText("You already have a service from the service shop active. Look under the `MY-SERVICES` category.");
+						result.setFlavourText("You already own a service from the service shop. Look under the `MY-SERVICES` category or in your `!inv`");
 					}
 				}else {
 					result.setFlavourText("You do not have the bank value to buy this service.");
@@ -147,7 +149,7 @@ public class ServicesUtils {
 		return result;
 	}
 
-	private static void activateService(ServiceBean service) throws SQLException {
+	public static void activateService(ServiceBean service) throws SQLException {
 		//everything is good, let's enable it
 		Long timeToRun = (long) (1000 * 60 * 60 * service.getLength());
 		Long expireTime = timeToRun + System.currentTimeMillis();
@@ -202,12 +204,16 @@ public class ServicesUtils {
 	}
 
 	
-	public static void createNewService() {
-		BiddableServiceBean biddableService = new BiddableServiceBean();
+	public static void createNewService(BiddableServiceBean biddableService) {
 		TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
 		servicesChannel.getManager().setSlowmode(0).queue();
 		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getOrCreateRole(RolesEnum.SERVICES).getIdLong())).queue();
 		RehabBot.getApi().addEventListener(new ServiceStateMachine(biddableService));
+		try {
+			DatabaseDegens.insertBiddableService(biddableService);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void restoreBiddableService() {
@@ -215,31 +221,35 @@ public class ServicesUtils {
 			ServiceBean biddableService = DatabaseDegens.selectBiddableService();
 			BIDDABLE_SERVICE_ID = DatabaseDegens.getBiddableServiceId();
 			if(biddableService!=null) {
-				Long timeToRun = (long) (1000 * 60 * 60 * biddableService.getLength());
-				Long expireTime = timeToRun + System.currentTimeMillis();
-				TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
-				
-				ServiceListener sl = new ServiceListener(servicesChannel.getIdLong(), expireTime, 0);
-				
-				Service serviceTask = new Service(biddableService.getOwnerDiscordId(),
-						biddableService.getName(),
-						biddableService.getFarms(),
-						servicesChannel.getIdLong(),
-						false,
-						BIDDABLE_SERVICE_ID,
-						sl,
-						expireTime);
-				
-				Timer serviceTimer = new Timer("ServiceTimer");
-				serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * biddableService.getInterval()));
-				
-				Timer kstTimer = new Timer("KillService-BiddableTimer");
-				KillServiceTask kst = new KillServiceTask(serviceTask);
-				kstTimer.schedule(kst, new Date(expireTime));
-				servicesChannel.sendMessage(biddableService.info()).allowedMentions(new ArrayList<>()).queue();
+				if(biddableService.isActive()) {
+					Long timeToRun = (long) (1000 * 60 * 60 * biddableService.getLength());
+					Long expireTime = timeToRun + System.currentTimeMillis();
+					TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
+					
+					ServiceListener sl = new ServiceListener(servicesChannel.getIdLong(), expireTime, 0);
+					
+					Service serviceTask = new Service(biddableService.getOwnerDiscordId(),
+							biddableService.getName(),
+							biddableService.getFarms(),
+							servicesChannel.getIdLong(),
+							false,
+							BIDDABLE_SERVICE_ID,
+							sl,
+							expireTime);
+					
+					Timer serviceTimer = new Timer("ServiceTimer");
+					serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * biddableService.getInterval()));
+					
+					Timer kstTimer = new Timer("KillService-BiddableTimer");
+					KillServiceTask kst = new KillServiceTask(serviceTask);
+					kstTimer.schedule(kst, new Date(expireTime));
+					servicesChannel.sendMessage(biddableService.info()).allowedMentions(new ArrayList<>()).queue();
+				}else {
+					createNewService(new BiddableServiceBean(biddableService));
+				}
 			}else {
 				//The biddable service was not active so we just create a new one same as always
-				createNewService();
+				createNewService(new BiddableServiceBean());
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -251,7 +261,6 @@ public class ServicesUtils {
 		try {
 			DatabaseDegens.updateBiddable(biddableService);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -264,6 +273,22 @@ public class ServicesUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+
+	public static void stopService(int serviceId) {
+		ServiceTimerTaskPair timerTaskPair = runningServices.get(serviceId);
+		if(null!=timerTaskPair) {
+			timerTaskPair.getKst().cancel();
+			timerTaskPair.getKstTimer().purge();
+			timerTaskPair.getKst().getService().stopService();
+			runningServices.remove(serviceId,timerTaskPair);
+		}
+	}
+
+
+	public static boolean canActivateService(long id) throws SQLException {
+		return DatabaseDegens.getActiveServicesCount()<50 && DatabaseDegens.getUserActiveServicesCount(DatabaseDegens.getDegenId(id))<5;
 	}
 
 }

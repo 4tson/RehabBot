@@ -1,5 +1,6 @@
 package mx.fortson.rehab.bean;
 
+import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.utils.RandomUtils;
 
@@ -19,9 +20,17 @@ public class BiddableServiceBean {
 		this.farms = RandomUtils.randomInt(5);
 		this.lengthHours = Double.parseDouble(String.format("%.1f", RandomUtils.randomDouble(1.0, 2.5)));
 		this.intervalMinutes = RandomUtils.randomInt(7);
-		this.winnerID = 0L;
+		this.winnerID = RehabBot.getBotId();
 		this.bid = RandomUtils.randomAmountFromRange(new Long[]{50000000L,200000000L});
 		
+	}
+	public BiddableServiceBean(ServiceBean service) {
+		this.serviceName = service.getName();
+		this.farms = service.getFarms();
+		this.lengthHours = service.getLength();
+		this.intervalMinutes = service.getInterval();
+		this.winnerID = service.getOwnerDiscordId();
+		this.bid = service.getPrice();
 	}
 	public Long getWinnerID() {
 		return winnerID;

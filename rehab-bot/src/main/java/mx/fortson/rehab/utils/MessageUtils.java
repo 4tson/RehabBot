@@ -23,6 +23,7 @@ import mx.fortson.rehab.bean.TransactionResultBean;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.FarmTypeEnum;
+import mx.fortson.rehab.enums.RegisterResultEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
 
 public class MessageUtils {
@@ -91,23 +92,33 @@ public class MessageUtils {
 		return sb.toString();
 	}
 
-	public static CharSequence getRegistrationMessage(boolean registerSuccess, String name) {
+	public static CharSequence getRegistrationMessage(RegisterResultEnum registerResult, String name) {
 		try {
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append(name);
-			if(registerSuccess) {
-				sb.append(" has been successfully registered. Enjoy ")
-				.append(FormattingUtils.format(DatabaseDegens.getInitialFunds()))
-				.append(" starting funds.");
-			}else {
-				sb.append(" is already registered.");
+			switch(registerResult) {
+				case ALREADY_ACTIVE:
+					sb.append(" is already registered.");
+					break;
+				case FAIL:
+					return "There has been an error during registration";
+				case REACTIVATE:
+					sb.append(" has been reactivated. Welcome back :)");
+					break;
+				case SUCCESS:
+					sb.append(" has been successfully registered. Enjoy ")
+					.append(FormattingUtils.format(DatabaseDegens.getInitialFunds()))
+					.append(" starting funds.");
+					break;
+				case FAIL_NORMIE_TO_IRON:
+					sb.append(" you used to be a normie. If you wish to become an ironman, you will need to `!wipe` and start over.");
+					break;
 			}
-			sb.append("\nYou can look at your funds at any time with the command `!bank`");
 			return sb.toString();
 		}catch(SQLException e) {
 			e.printStackTrace();
-			return "Could not register";
+			return "Registered";
 		}
 	}
 
@@ -330,11 +341,11 @@ public class MessageUtils {
 		return sb.toString();
 	}
 
-	public static PagedImageMessageBean getInventoryImage(List<ItemBean> inventory, String name, int imageCount) {
+	public static PagedImageMessageBean getInventoryImage(List<ItemBean> inventory, String name) {
 		
 		PagedImageMessageBean result = new PagedImageMessageBean();
 		try {
-			result = ImageUtils.generateInventoryImage(inventory,name, imageCount);
+			result = ImageUtils.generateInventoryImage(inventory,name);
 			result.setMoreRecords(!result.getLeftOverRecords().isEmpty());
 			result.setImageName(name + "_inv_" + System.currentTimeMillis() + ".png");
 		}catch(IOException e) {
@@ -584,6 +595,16 @@ public class MessageUtils {
 		}else {
 			sb.append("You are not currently active, so I cannot deactivate you");
 		}
+		return sb.toString();
+	}
+
+	public static CharSequence confirmWipe(long idLong, String confirmString) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(idLong)
+		.append("> Are you ABSOLUTELY sure you want to wipe your data? You have 10 seconds to send the following message to confirm: `")
+		.append(confirmString)
+		.append("`. **THIS ACTION CANNOT BE UNDONE**");
 		return sb.toString();
 	}
 }

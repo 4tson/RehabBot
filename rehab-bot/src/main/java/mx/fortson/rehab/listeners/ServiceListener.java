@@ -30,7 +30,7 @@ public class ServiceListener extends ListenerAdapter{
 	        	event.getChannel().sendMessage(MessageUtils.confirmServiceCancel(ServicesUtils.getServiceById(serviceId))).queue();;
 	        	cancelling = true;
 	        }else if(event.getMessage().getContentRaw().equalsIgnoreCase("y") && cancelling) {
-	        	ServicesUtils.stopService(serviceId);
+	        	ServicesUtils.endService(serviceId);
 	        }else if(cancelling){
 	        	event.getChannel().sendMessage("Cancel request cancelled by cancelling the cancel request.").queue();
 	        	cancelling = false;

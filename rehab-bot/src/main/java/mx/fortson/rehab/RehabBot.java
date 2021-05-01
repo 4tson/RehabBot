@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 
-import javax.security.auth.login.LoginException;
-
+import mx.fortson.rehab.bean.DegenBean;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.ServiceBean;
@@ -20,6 +19,7 @@ import mx.fortson.rehab.bean.ServiceTimerTaskPair;
 import mx.fortson.rehab.enums.CategoriesEnum;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.PredefinedServicesEnum;
+import mx.fortson.rehab.enums.RegisterResultEnum;
 import mx.fortson.rehab.enums.RolesEnum;
 import mx.fortson.rehab.listeners.LeaveListener;
 import mx.fortson.rehab.listeners.MessageListener;
@@ -55,22 +55,22 @@ public class RehabBot {
 		return api;
 	}
 	
-	public static void main(String[] args) throws SQLException, ClassNotFoundException, FileNotFoundException, IOException {
-		if(args.length<1) {
-			System.err.println("Expected properties file location as parameter.");
-			System.exit(1);
-		}
-		initProperties(args[0]);
-		
-		JDABuilder builder = JDABuilder.createDefault(getBotToken())
-				.setChunkingFilter(ChunkingFilter.ALL) // enable member chunking for all guilds
-		          .setMemberCachePolicy(MemberCachePolicy.ALL) // ignored if chunking enabled
-		          .enableIntents(GatewayIntent.GUILD_MEMBERS);
+	public static void main(String[] args) {
 		try {
+			if(args.length<1) {
+				System.err.println("Expected properties file location as parameter.");
+				System.exit(1);
+			}
+			initProperties(args[0]);
+			
+			JDABuilder builder = JDABuilder.createDefault(getBotToken())
+					.setChunkingFilter(ChunkingFilter.ALL) // enable member chunking for all guilds
+			          .setMemberCachePolicy(MemberCachePolicy.ALL) // ignored if chunking enabled
+			          .enableIntents(GatewayIntent.GUILD_MEMBERS);
 			api = builder.build()
 			.awaitReady();
-			Long botDiscId = getApi().getSelfUser().getIdLong();
-			if(register(botDiscId,"Shop Owner",false)) {
+			Long botDiscId = getBotId();
+			if(register(botDiscId,"Shop Owner",false).equals(RegisterResultEnum.SUCCESS)) {
 				registerPredefinedServices(botDiscId);
 			}
 			guild = api.getGuildById(getGuildId());
@@ -81,11 +81,7 @@ public class RehabBot {
 			}
 			getApi().addEventListener(new MessageListener());
 			getApi().addEventListener(new LeaveListener());
-		}catch(LoginException e) {
-			System.err.println("login error");
-			e.printStackTrace();
-		}catch(InterruptedException e) {
-			System.err.println("interrupted thread");
+		}catch(Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -170,7 +166,7 @@ public class RehabBot {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void clearAndRestartServices() throws InterruptedException {
+	private static void clearAndRestartServices() throws InterruptedException, SQLException {
 		TextChannel servicesShopChannel = getOrCreateChannel(ChannelsEnum.SERVICESSHOP);
 		{
 			TextChannel bidServicesChannel = getOrCreateChannel(ChannelsEnum.BIDSERVICE);
@@ -185,74 +181,90 @@ public class RehabBot {
 		myServicesCat.getTextChannels().forEach(a -> a.delete().complete());
 		
 		//Get all "running" services
-		try {
-			PagedMessageBean pagedServiceShop = MessageUtils.getShopDetails(DatabaseDegens.getPredServices());
-			while(pagedServiceShop.isMoreRecords()) {
-				servicesShopChannel.sendMessage(pagedServiceShop.getMessage()).allowedMentions(new ArrayList<>()).complete();
-				pagedServiceShop = MessageUtils.getShopDetails((List<ItemBean>)(Object)pagedServiceShop.getLeftOverRecords());
-			}
-			servicesShopChannel.sendMessage(pagedServiceShop.getMessage()).allowedMentions(new ArrayList<>()).queue();
-			
-			
-			List<ServiceBean> runningServices = DatabaseDegens.getRunningServices();
-			for(ServiceBean runningService : runningServices) {
-				
-				Member member = getGuild().getMemberById(runningService.getOwnerDiscordId());
-				if(null!=member) {
-					Long timeToRun = (long) (1000 * 60 * 60 * runningService.getLength());
-					Long expireTime = timeToRun + System.currentTimeMillis();
-					TextChannel createdChannel = myServicesCat.createTextChannel(runningService.getServiceId() + "-" + runningService.getName() + "-" + runningService.getOwnerName()).complete();
-					 
-					createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
-					createdChannel.putPermissionOverride(member).setAllow(Permission.VIEW_CHANNEL).complete();
-					
-					StringBuilder greeting = new StringBuilder();
-					greeting.append(runningService.info())
-					.append(" You can check the status at any time using !status");
-					createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
-					
-					ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, runningService.getServiceId());
-					Service serviceTask = new Service(runningService.getOwnerDiscordId(),
-							runningService.getName(),
-							runningService.getFarms(),
-							createdChannel.getIdLong(),
-							true,
-							runningService.getServiceId(),
-							sl,
-							expireTime);
-					
-					Timer serviceTimer = new Timer("Service-" + runningService.getServiceId() + "Timer");
-					serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * runningService.getInterval()));
-					
-					Timer kstTimer = new Timer("KillService-" + runningService.getServiceId() + "Timer");
-					KillServiceTask kst = new KillServiceTask(serviceTask);
-					kstTimer.schedule(kst, new Date(expireTime));
-					
-					ServicesUtils.addCancellableService(runningService.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
-				}else {
-					
-				}
-			}
-			//We create the new services service
-			ServicesUtils.restoreBiddableService();
-		}catch(SQLException e) {
-			e.printStackTrace();
+		PagedMessageBean pagedServiceShop = MessageUtils.getShopDetails(DatabaseDegens.getPredServices());
+		while(pagedServiceShop.isMoreRecords()) {
+			servicesShopChannel.sendMessage(pagedServiceShop.getMessage()).allowedMentions(new ArrayList<>()).complete();
+			pagedServiceShop = MessageUtils.getShopDetails((List<ItemBean>)(Object)pagedServiceShop.getLeftOverRecords());
 		}
+		servicesShopChannel.sendMessage(pagedServiceShop.getMessage()).allowedMentions(new ArrayList<>()).queue();
+		
+		
+		List<ServiceBean> runningServices = DatabaseDegens.getRunningServices();
+		for(ServiceBean runningService : runningServices) {
+			System.out.println(runningService.getServiceId());
+			Member member = getGuild().getMemberById(runningService.getOwnerDiscordId());
+			if(null!=member) {
+				Long timeToRun = (long) (1000 * 60 * 60 * runningService.getLength());
+				Long expireTime = timeToRun + System.currentTimeMillis();
+				TextChannel createdChannel = myServicesCat.createTextChannel(runningService.getServiceId() + "-" + runningService.getName() + "-" + runningService.getOwnerName()).complete();
+				 
+				createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
+				createdChannel.putPermissionOverride(member).setAllow(Permission.VIEW_CHANNEL).complete();
+				
+				StringBuilder greeting = new StringBuilder();
+				greeting.append(runningService.info())
+				.append(" You can check the status at any time using !status");
+				createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
+				
+				ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, runningService.getServiceId());
+				Service serviceTask = new Service(runningService.getOwnerDiscordId(),
+						runningService.getName(),
+						runningService.getFarms(),
+						createdChannel.getIdLong(),
+						true,
+						runningService.getServiceId(),
+						sl,
+						expireTime);
+				
+				Timer serviceTimer = new Timer("Service-" + runningService.getServiceId() + "Timer");
+				serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * runningService.getInterval()));
+				
+				Timer kstTimer = new Timer("KillService-" + runningService.getServiceId() + "Timer");
+				KillServiceTask kst = new KillServiceTask(serviceTask);
+				kstTimer.schedule(kst, new Date(expireTime));
+				
+				ServicesUtils.addCancellableService(runningService.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
+			}else {
+				System.out.println("found active service with inactive member");
+				deactivateDegen(runningService.getOwnerDiscordId());
+			}
+		}
+		//We create the new services service
+		ServicesUtils.restoreBiddableService();
 	}
 
+	public static void deleteDegen(Long discordId) {
+		System.out.println("deleting degen, first we deactivate");
+		if(deactivateDegen(discordId)) {
+			try {
+				DatabaseDegens.deleteDegen(DatabaseDegens.getDegenId(discordId));
+				System.out.println("deleted degen");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	public static boolean deactivateDegen(Long discordId) {
 		try {
 			if(DatabaseDegens.existsById(discordId)) {
-				boolean deactivated = deactivateDegen(DatabaseDegens.getDegenId(discordId));
+				int degenId = DatabaseDegens.getDegenId(discordId);
+				boolean deactivated = deactivateDegen(degenId);
 				System.out.println("user was deactivated from db");
 				if(deactivated) {
 					System.out.println("removing roles");
-					for(Role role : getGuild().getMemberById(discordId).getRoles()) {
-						if(RolesEnum.isRemovable(role.getName())) {
-							getGuild().removeRoleFromMember(discordId, role).queue();
+					if(getGuild().getMemberById(discordId)!=null) {
+						for(Role role : getGuild().getMemberById(discordId).getRoles()) {
+							if(RolesEnum.isRemovable(role.getName())) {
+								getGuild().removeRoleFromMember(discordId, role).queue();
+							}
 						}
 					}
+					System.out.println("Stopping running services");
+					for(int serviceId : DatabaseDegens.getDegenActiveServicesId(degenId)) {
+						ServicesUtils.stopService(serviceId);
+					}
 				}
+				
 				return deactivated; 
 			}else {
 				System.out.println("user is not active or does not exist in db");
@@ -289,17 +301,42 @@ public class RehabBot {
 		getOrCreateChannel(ChannelsEnum.ANNOUNCEMENTS).sendMessage("<@&" + getOrCreateRole(RolesEnum.ANNOUNCEMENTS).getIdLong() + "> the bot is now up. !degen if you can't see channels.").queue();
 	}
 	
-	public static boolean register(long id, String name, boolean iron) {
+	public static RegisterResultEnum register(long id, String name, boolean iron) {
+		RegisterResultEnum result = RegisterResultEnum.FAIL;
 		try {
 			if(DatabaseDegens.existsById(id)) {
-				return false;
+				result = RegisterResultEnum.ALREADY_ACTIVE;
 			}else {
-				return DatabaseDegens.insertNewDegen(id,name,iron);
+				DegenBean degen = DatabaseDegens.getDegen(id);
+				if(degen!=null) {
+					int degenId = degen.getDegenId();
+					if(iron && !degen.isIronman()) {
+						result = RegisterResultEnum.FAIL_NORMIE_TO_IRON;
+					}else {
+						int insertResult = DatabaseDegens.insertNewDegen(id,name,iron);
+						if(insertResult>1) {
+							ServiceBean predService = DatabaseDegens.selectDegenPredService(degenId);
+							if(predService!=null) {
+								System.out.println("degen had service from shop");
+								if(ServicesUtils.canActivateService(id)) {
+									System.out.println("can activate service from shop");
+									ServicesUtils.activateService(predService);
+								}
+							}
+							result = RegisterResultEnum.REACTIVATE;
+						}
+					}
+				}else {
+					System.out.println("inserting new degen");
+					if(DatabaseDegens.insertNewDegen(id,name,iron)>1) {
+						result =  RegisterResultEnum.SUCCESS;
+					}
+				}
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return result;
 	}
 	
 	
@@ -330,5 +367,9 @@ public class RehabBot {
 
 	public static String getDbPassword() {
 		return props.getProperty("db.password");
+	}
+
+	public static Long getBotId() {
+		return getApi().getSelfUser().getIdLong();
 	}
 }

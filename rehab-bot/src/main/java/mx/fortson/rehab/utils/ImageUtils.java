@@ -6,7 +6,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,8 +24,7 @@ public class ImageUtils {
 	private static Font osrsFont;
 	
 	static {
-		
-		try (InputStream is = new FileInputStream("." + FontsEnum.OSRS.getFileName())){
+		try(InputStream is = ImageUtils.class.getResourceAsStream(FontsEnum.OSRS.getFileName())){
 			osrsFont = Font.createFont(Font.TRUETYPE_FONT,is).deriveFont(15f);
 		} catch (FontFormatException e) {
 			e.printStackTrace();
@@ -46,7 +44,7 @@ public class ImageUtils {
 	    return pFont.deriveFont(fontSize);
 	}
 
-	public static PagedImageMessageBean generateInventoryImage(List<ItemBean> inventory, String name, int imageCount) throws IOException {
+	public static PagedImageMessageBean generateInventoryImage(List<ItemBean> inventory, String name) throws IOException {
 		BufferedImage inventoryBase;
 		try(InputStream is = ImageUtils.class.getResourceAsStream(ImagesEnum.INVENTORY.getFileName())) {
 			inventoryBase = ImageIO.read(is);	
@@ -61,7 +59,6 @@ public class ImageUtils {
 		Graphics graphic = combined.getGraphics();
 		graphic.drawImage(inventoryBase,0,0,null);
 		graphic.setFont(osrsFont);
-		graphic.drawString(String.valueOf(imageCount +1), 8, 8);
 		graphic.dispose();
 		
 		String titleString = name + "'s inventory";
@@ -118,11 +115,12 @@ public class ImageUtils {
 		String totalString = "Value(" + FormattingUtils.format(totalValue) + ")";
 		addValue(combined.getGraphics(), totalString,inventoryBase.getWidth(),inventoryBase.getHeight());
 		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(combined, "png", baos);
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+			ImageIO.write(combined, "png", baos);
+			result.setLeftOverRecords(leftover);
+			result.setImageBytes(baos.toByteArray());
+		}
 		
-		result.setLeftOverRecords(leftover);
-		result.setImageBytes(baos.toByteArray());
 		return result;
 	}
 
