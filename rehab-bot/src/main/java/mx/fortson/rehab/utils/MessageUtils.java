@@ -330,11 +330,11 @@ public class MessageUtils {
 		return sb.toString();
 	}
 
-	public static PagedImageMessageBean getInventoryImage(List<ItemBean> inventory, String name) {
+	public static PagedImageMessageBean getInventoryImage(List<ItemBean> inventory, String name, int imageCount) {
 		
 		PagedImageMessageBean result = new PagedImageMessageBean();
 		try {
-			result = ImageUtils.generateInventoryImage(inventory,name);
+			result = ImageUtils.generateInventoryImage(inventory,name, imageCount);
 			result.setMoreRecords(!result.getLeftOverRecords().isEmpty());
 			result.setImageName(name + "_inv_" + System.currentTimeMillis() + ".png");
 		}catch(IOException e) {
@@ -570,6 +570,19 @@ public class MessageUtils {
 			sb.append(" has `")
 			.append(farms)
 			.append("` farm(s) available. Is that a lot?");
+		}
+		return sb.toString();
+	}
+
+	public static CharSequence getDeactivationMessage(boolean deactivated, long id) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(id)
+		.append(">");
+		if(deactivated) {
+			sb.append("You were successfully deactivated. Come back any time by registering again.");
+		}else {
+			sb.append("You are not currently active, so I cannot deactivate you");
 		}
 		return sb.toString();
 	}

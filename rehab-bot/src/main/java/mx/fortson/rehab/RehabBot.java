@@ -25,6 +25,7 @@ import mx.fortson.rehab.listeners.LeaveListener;
 import mx.fortson.rehab.listeners.MessageListener;
 import mx.fortson.rehab.listeners.ServiceListener;
 import mx.fortson.rehab.tasks.KillServiceTask;
+import mx.fortson.rehab.utils.FormattingUtils;
 import mx.fortson.rehab.utils.MessageUtils;
 import mx.fortson.rehab.utils.ServicesUtils;
 import net.dv8tion.jda.api.JDA;
@@ -95,7 +96,7 @@ public class RehabBot {
 		try {
 			degenId = DatabaseDegens.getDegenId(botDiscId);
 			for(PredefinedServicesEnum service : PredefinedServicesEnum.values()) {
-				DatabaseDegens.createPredService(service.getName(), service.getFarms(), service.getDurationHours(), service.getRate(), degenId);
+				DatabaseDegens.createPredService(service.getName(), service.getFarms(), service.getDurationHours(), service.getRate(), degenId,FormattingUtils.parseAmount(service.getPrice()));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -121,7 +122,6 @@ public class RehabBot {
 				return channel;
 			}
 		}
-		System.out.println("Creating channel");
 		TextChannel createdChannel = getGuild().createTextChannel(name, category).setSlowmode(slowmode).complete();
 		createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
 		for(RolesEnum role : permittedRoles) {
@@ -148,7 +148,6 @@ public class RehabBot {
 				return category;
 			}
 		}
-		System.out.println("Creating category");
 		Category createdCategory = getGuild().createCategory(name).complete();
 		createdCategory.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
 		for(RolesEnum role : permittedRoles) {
@@ -231,7 +230,7 @@ public class RehabBot {
 					
 					ServicesUtils.addCancellableService(runningService.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
 				}else {
-//					DatabaseDegens.deleteService(runningService.getServiceId());
+					
 				}
 			}
 			//We create the new services service
@@ -241,6 +240,39 @@ public class RehabBot {
 		}
 	}
 
+	public static boolean deactivateDegen(Long discordId) {
+		try {
+			if(DatabaseDegens.existsById(discordId)) {
+				boolean deactivated = deactivateDegen(DatabaseDegens.getDegenId(discordId));
+				System.out.println("user was deactivated from db");
+				if(deactivated) {
+					System.out.println("removing roles");
+					for(Role role : getGuild().getMemberById(discordId).getRoles()) {
+						if(RolesEnum.isRemovable(role.getName())) {
+							getGuild().removeRoleFromMember(discordId, role).queue();
+						}
+					}
+				}
+				return deactivated; 
+			}else {
+				System.out.println("user is not active or does not exist in db");
+				return false;
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static boolean deactivateDegen(int degenId) {
+		try {
+			return DatabaseDegens.deactivateDegen(degenId);
+		}catch(SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 	private static void purgeChannel(TextChannel channel) {
 		for(int i = 0; i==2;i++) {
 			channel.sendMessage("deleting..").complete();

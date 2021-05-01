@@ -18,6 +18,10 @@ public enum RolesEnum {
 	private RolesEnum(String name) {
 		this.name = name;
 	}
+
+	public static boolean isRemovable(String name) {
+		return !name.equalsIgnoreCase("@everyone");
+	}
 	
 	
 }

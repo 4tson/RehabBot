@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
 public class BotCommands implements IChannel{
 	
@@ -46,6 +47,9 @@ public class BotCommands implements IChannel{
 							event.getGuild().addRoleToMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.IRONMAN)).queue();
 						}
 						channel.sendMessage(MessageUtils.getRegistrationMessage(registerSuccessIron,author.getName())).allowedMentions(new ArrayList<>()).queue();
+						break;
+					case DEACTIVATE:
+						channel.sendMessage(MessageUtils.getDeactivationMessage(RehabBot.deactivateDegen(author.getIdLong()),author.getIdLong()));
 						break;
 					case ADDANNOUNCEMENTROLE:
 						String action = "added";
@@ -87,14 +91,22 @@ public class BotCommands implements IChannel{
 			channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
 			break;
 		case INVENTORY:
-			PagedImageMessageBean result = MessageUtils.getInventoryImage(InventoryUtils.getInventory(author.getIdLong()),author.getName());
+			int imageCount = 0;
+			PagedImageMessageBean result = MessageUtils.getInventoryImage(InventoryUtils.getInventory(author.getIdLong()),author.getName(),imageCount);
 			PrivateChannel pm = event.getAuthor().openPrivateChannel().complete();
+			MessageAction messageAction = pm.sendMessage("Here is your inventory.");
 			while(result.isMoreRecords()) {
-				pm.sendFile(result.getImageBytes(),result.getImageName()).queue();
-				result = MessageUtils.getInventoryImage((List<ItemBean>)(Object)result.getLeftOverRecords(),author.getName());
+				imageCount++;
+				messageAction = messageAction.addFile(result.getImageBytes(),result.getImageName());
+				result = MessageUtils.getInventoryImage((List<ItemBean>)(Object)result.getLeftOverRecords(),author.getName(),imageCount);
+				if(imageCount==10) {
+					messageAction.complete();
+					messageAction = pm.sendMessage("And anotha one.");
+					imageCount = 0;
+				}
 			}
-			pm.sendMessage("Service Ids: " + result.getMessage()).addFile(result.getImageBytes(), result.getImageName()).queue();
-			channel.sendMessage("Inventory sent via PM").queue();
+			messageAction.addFile(result.getImageBytes(), result.getImageName()).queue();
+			channel.sendMessage("Inventory sent via PM.").queue();
 			break;
 		case FUNDS:
 			channel.sendMessage(MessageUtils.getUserFunds(FundUtils.getBankValue(author.getIdLong()), author.getName())).allowedMentions(new ArrayList<>()).queue();

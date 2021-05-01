@@ -4,12 +4,12 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +26,9 @@ public class ImageUtils {
 	private static Font osrsFont;
 	
 	static {
-		try {
-			osrsFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(new File("." + FontsEnum.OSRS.getFileName()))).deriveFont(15f);
-			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(osrsFont);
+		
+		try (InputStream is = new FileInputStream((new File("." + FontsEnum.OSRS.getFileName())))){
+			osrsFont = Font.createFont(Font.TRUETYPE_FONT,is).deriveFont(15f);
 		} catch (FontFormatException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -47,15 +47,22 @@ public class ImageUtils {
 	    return pFont.deriveFont(fontSize);
 	}
 
-	public static PagedImageMessageBean generateInventoryImage(List<ItemBean> inventory, String name) throws IOException {
+	public static PagedImageMessageBean generateInventoryImage(List<ItemBean> inventory, String name, int imageCount) throws IOException {
+		BufferedImage inventoryBase;
+		try(InputStream is = ImageUtils.class.getResourceAsStream(ImagesEnum.INVENTORY.getFileName())) {
+			inventoryBase = ImageIO.read(is);	
+		}
+		
 		PagedImageMessageBean result = new PagedImageMessageBean();
 		List<ItemBean> leftover = new ArrayList<>(inventory);
 		
-		BufferedImage inventoryBase = ImageIO.read(ImageUtils.class.getResourceAsStream(ImagesEnum.INVENTORY.getFileName()));
+		
 		
 		BufferedImage combined = new BufferedImage(inventoryBase.getWidth(), inventoryBase.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics graphic = combined.getGraphics();
 		graphic.drawImage(inventoryBase,0,0,null);
+		graphic.setFont(osrsFont);
+		graphic.drawString(String.valueOf(imageCount +1), 8, 8);
 		graphic.dispose();
 		
 		String titleString = name + "'s inventory";
@@ -79,10 +86,13 @@ public class ImageUtils {
 			totalValue = totalValue + value;
 			
 			graphic = combined.getGraphics();
-			BufferedImage originalImage = ImageIO.read(ImageUtils.class.getResourceAsStream("/items" + item.getImageName().toLowerCase()));
-			int xIValue = (x + (sizesX/2)) - (originalImage.getWidth()/2);
-			int yIValue = (y + (sizesY/2)) - (originalImage.getHeight()/2);
-			graphic.drawImage(originalImage,xIValue,yIValue, null);
+			BufferedImage itemImage;
+			try(InputStream imageIS = ImageUtils.class.getResourceAsStream("/items" + item.getImageName().toLowerCase())){
+				itemImage = ImageIO.read(imageIS);
+			}
+			int xIValue = (x + (sizesX/2)) - (itemImage.getWidth()/2);
+			int yIValue = (y + (sizesY/2)) - (itemImage.getHeight()/2);
+			graphic.drawImage(itemImage,xIValue,yIValue, null);
 			
 			String descriptor = null;
 			if(item.isService()) {
@@ -108,8 +118,6 @@ public class ImageUtils {
 		 }
 		String totalString = "Value(" + FormattingUtils.format(totalValue) + ")";
 		addValue(combined.getGraphics(), totalString,inventoryBase.getWidth(),inventoryBase.getHeight());
-		
-		
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ImageIO.write(combined, "png", baos);
@@ -146,9 +154,12 @@ public class ImageUtils {
 	}
 
 	private static void addForSaleIndicator(Graphics graphics, int x, int y, int sizesX, int sizesY) throws IOException {
+		BufferedImage shopIndicator;
+		try(InputStream shopIndIS = ImageUtils.class.getResourceAsStream("/shopindicator.png")){
+			shopIndicator = ImageIO.read(shopIndIS);
+		}
 		graphics.setColor(ColorsEnum.OSRSORANGE.getColor());
 		graphics.drawRect(x, y, sizesX, sizesY);
-		BufferedImage shopIndicator = ImageIO.read(ImageUtils.class.getResourceAsStream("/shopindicator.png"));
 		graphics.drawImage(shopIndicator,x,y, null);
 		graphics.dispose();
 	}

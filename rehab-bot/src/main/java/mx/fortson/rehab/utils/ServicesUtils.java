@@ -60,7 +60,6 @@ public class ServicesUtils {
 
 	public static void returnBid(BiddableServiceBean biddableService) {
 		try {
-			
 			DatabaseDegens.updateFundsSum(biddableService.getBid(), DatabaseDegens.getDegenId(biddableService.getWinnerID()));
 		}catch(SQLException e) {
 			e.printStackTrace();
@@ -69,7 +68,6 @@ public class ServicesUtils {
 	public static String activateService(long discId, long serviceId) {
 		String result = "";
 		try {
-			
 			ServiceBean service = DatabaseDegens.getServiceById(serviceId);
 			if(null==service) {
 				//send message service doesn't exist
@@ -86,8 +84,16 @@ public class ServicesUtils {
 							//send message can't activate service that is already active
 							result = "You cannot activate a service that is already running! Look for it under the services category. Otherwise ping a dev cause that shid is messed up.";
 						}else {
-							activateService(service);
-							result = "Service activated!";
+							if(DatabaseDegens.getActiveServicesCount()==50) {
+								result = "There are too many active services right now. Please wait for another service to finish.";
+							}else {
+								if(DatabaseDegens.getUserActiveServicesCount(DatabaseDegens.getDegenId(discId))>=5) {
+									result = "You have reached your limit of 5 active services. Either wait for one of them to finish or `!cancel` it.";
+								}else {
+									activateService(service);
+									result = "Service activated!";
+								}
+							}
 						}
 					}
 				}
@@ -95,13 +101,13 @@ public class ServicesUtils {
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
+			result = "There was a problem with your request, try again later.";
 		}
 		return result;
 	}
 
 	public static void deleteService(int serviceID) {
 		try {
-			
 			DatabaseDegens.deleteService(serviceID);
 		}catch(SQLException e) {
 			e.printStackTrace();

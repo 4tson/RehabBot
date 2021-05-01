@@ -631,7 +631,7 @@ public class DatabaseDegens {
 		return 0;
 	}
 
-	public static void createPredService(String name, int farms, double durationHours, int rate, int degenId) throws SQLException {
+	public static void createPredService(String name, int farms, double durationHours, int rate, int degenId, Long price) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.INSERT_PREDETERMINED_SERVICE)){
 			stmt.setInt(1, farms);
@@ -639,7 +639,40 @@ public class DatabaseDegens {
 			stmt.setString(3, name);
 			stmt.setInt(4, rate);
 			stmt.setInt(5, degenId);
+			stmt.setBoolean(6, true);
+			stmt.setLong(7, price);
 			stmt.executeUpdate();
+		}
+	}
+
+	public static int getActiveServicesCount() throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.COUNT_ACTIVE_SERVICES)){
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+		return 0;
+	}
+
+	public static int getUserActiveServicesCount(int degenId) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.COUNT_ACTIVE_SERVICES_BY_DEGEN)){
+			stmt.setInt(1, degenId);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+		return 0;
+	}
+
+	public static boolean deactivateDegen(int degenId) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.DEACTIVATE_DEGEN)){
+			stmt.setInt(1, degenId);
+			return stmt.executeUpdate() == 1;
 		}
 	}
 }

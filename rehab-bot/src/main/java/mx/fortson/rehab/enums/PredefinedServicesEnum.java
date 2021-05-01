@@ -5,7 +5,7 @@ public enum PredefinedServicesEnum {
 	LOW("Low tier service",2,1.00,3,"1B"),
 	MID("Mid tier service",3,5.00,5,"3B"),
 	HIGH("High tier service",2,7.00,3,"6B"),
-	ULTRA("Ultra tier service",1,1.00,1,"20B");
+	ULTRA("Ultra tier service",10,1.00,5,"100B");
 	private String name;
 	private int farms;
 	private double durationHours;

@@ -10,6 +10,8 @@ public enum RehabCommandsEnum {
 	
 	FARMS("!farms","Displays your current available farms.",ChannelsEnum.ALL, true),
 	
+	DEACTIVATE("!inactive","Changes your status to inactive. You can come back at any time with `!degen` or `!ironman`",ChannelsEnum.BOTCOMMANDS, true),
+	
 	REGISTERDEGEN("!degen","Registers you as a degen. Degens have access to all features of the bot.",ChannelsEnum.BOTCOMMANDS, true),
 	
 	REGISTERIRON("!ironman","Registers you as an ironman. Ironmen have limited access to the bot's features.",ChannelsEnum.BOTCOMMANDS, true),
