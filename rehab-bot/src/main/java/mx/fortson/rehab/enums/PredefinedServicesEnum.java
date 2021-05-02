@@ -4,7 +4,7 @@ public enum PredefinedServicesEnum {
 
 	LOW("Low tier service",2,1.00,3,"1B",1),
 	MID("Mid tier service",3,5.00,4,"2B",1),
-	HIGH("High tier service",2,7.00,3,"6B",2),
+	HIGH("High tier service",2,7.00,3,"6B",1),
 	ULTRA("Ultra tier service",10,1.00,7,"10B",3),
 	MEGA("Mega tier service",10,1.00,6,"15B",6),
 	DIAMOND("Diamond tier service",10,1.20,5,"20B",10),

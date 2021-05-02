@@ -513,10 +513,10 @@ public class DatabaseDegens {
 		return result;
 	}
 
-	public static void deleteDegen(int degenId) throws SQLException {
+	public static void deleteDegen(Long discId) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.DELETE_DEGEN)){
-			stmt.setInt(1, degenId);
+			stmt.setLong(1, discId);
 			stmt.executeUpdate();
 		}
 	}

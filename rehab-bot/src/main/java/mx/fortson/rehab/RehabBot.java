@@ -238,7 +238,7 @@ public class RehabBot {
 	public static void deleteDegen(Long discordId) {
 		if(deactivateDegen(discordId)) {
 			try {
-				DatabaseDegens.deleteDegen(DatabaseDegens.getDegenId(discordId));
+				DatabaseDegens.deleteDegen(discordId);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
