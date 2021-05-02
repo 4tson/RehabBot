@@ -144,7 +144,7 @@ public class MessageUtils {
 				if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-260){
 					if(farmResult.getType().equals(FarmTypeEnum.ITEM_UNIQUE) || farmResult.getType().equals(FarmTypeEnum.SERVICE)){
 						sb.append("<@&")
-						.append(RehabBot.getOrCreateRole(RolesEnum.UNIQUES))
+						.append(RehabBot.getOrCreateRole(RolesEnum.UNIQUES).getIdLong())
 						.append("> - ");
 						result.setPingList(Collections.singletonList(MentionType.ROLE));
 					}
@@ -172,7 +172,9 @@ public class MessageUtils {
 						.append(id)
 						.append("> - You found `")
 						.append(farmResult.getName())
-						.append("` it will generate `")
+						.append("` A level `")
+						.append(farmResult.getLevel())
+						.append("` service, it will generate `")
 						.append(farmResult.getFarms())
 						.append("` farm(s) every `")
 						.append(farmResult.getInterval())

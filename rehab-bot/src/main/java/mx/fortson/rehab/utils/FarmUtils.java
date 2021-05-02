@@ -67,6 +67,7 @@ public class FarmUtils {
 							farmResultBean.setFarms(farmsFarmed);
 							farmResultBean.setRateHours(rateHour);
 							farmResultBean.setInterval(interval);
+							farmResultBean.setLevel(serviceLevel);
 							DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(id),false, serviceLevel);
 							break;
 						}
