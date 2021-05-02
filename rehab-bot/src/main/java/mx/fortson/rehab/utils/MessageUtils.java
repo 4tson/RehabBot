@@ -2,8 +2,6 @@ package mx.fortson.rehab.utils;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +13,8 @@ import mx.fortson.rehab.bean.DuelResultBean;
 import mx.fortson.rehab.bean.FarmCollectionBean;
 import mx.fortson.rehab.bean.FarmResultBean;
 import mx.fortson.rehab.bean.ItemBean;
+import mx.fortson.rehab.bean.LevelBean;
+import mx.fortson.rehab.bean.LevelUpResultBean;
 import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
@@ -160,7 +160,6 @@ public class MessageUtils {
 						.append(" congratulations.\n");
 						break;
 					case SERVICE:
-						System.out.println("Service found " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
 						sb.append("<@")
 						.append(id)
 						.append("> - You found `")
@@ -282,11 +281,11 @@ public class MessageUtils {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("`+------------------------------------------------------------------------------------------+\r\n"
-				+ "|                                            Shop                                           |\r\n"
-				+ "+----------------+------------------------+---------------+---------------+-----------------+\r\n"
-				+ "|       ID       |          Name          |     Owner     |     Price     |      Value      |\r\n"
-				+ "+----------------+------------------------+---------------+---------------+-----------------+\r\n");
+		sb.append("`+-----------------------------------------------------------------------------------------------------+\r\n"
+				+ "|                                            Shop                                                     |\r\n"
+				+ "+----------------+------------------------+---------------+---------------+-----------------+---------+\r\n"
+				+ "|       ID       |          Name          |     Owner     |     Price     |      Value      |  Level  |\r\n"
+				+ "+----------------+------------------------+---------------+---------------+-----------------+---------+\r\n");
 		
 		for(ItemBean shopItem : shopContents) {
 			if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-184){
@@ -300,8 +299,10 @@ public class MessageUtils {
 				.append(FormattingUtils.tableFormat(FormattingUtils.format(shopItem.getPrice()),15))
 				.append("|")
 				.append(FormattingUtils.tableFormat(FormattingUtils.format(shopItem.getValue()),17))
+				.append("|")
+				.append(FormattingUtils.tableFormat(shopItem.isService() ? String.valueOf(shopItem.getRequiredLevel()) : "-",9))
 				.append("|\r\n")
-				.append("+----------------+------------------------+---------------+---------------+-----------------+\r\n");
+				.append("+----------------+------------------------+---------------+---------------+-----------------+---------+\r\n");
 				leftovers.remove(shopItem);
 			}else {
 				sb.deleteCharAt(sb.length()-1);
@@ -605,6 +606,52 @@ public class MessageUtils {
 		.append("> Are you ABSOLUTELY sure you want to wipe your data? You have 10 seconds to send the following message to confirm: `")
 		.append(confirmString)
 		.append("`. **THIS ACTION CANNOT BE UNDONE**");
+		return sb.toString();
+	}
+
+	public static CharSequence confirmLevelUp(long idLong, LevelBean nextLevel) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(idLong)
+		.append("> leveling up will cost you ")
+		.append(FormattingUtils.format(nextLevel.getCost()))
+		.append(" are you sure you want to continue? Y/N");
+		return sb.toString();
+	}
+
+	public static CharSequence announceLevelUp(LevelUpResultBean result, Long userId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(userId)
+		.append("> ");
+		if(result.isLevelUp()) {
+			sb.append("You have leveled up. You are now level `")
+			.append(result.getNewLevel())
+			.append("`.");
+			if(result.isFreeService()) {
+				sb.append("Additionally, you found `")
+				.append(result.getService().getName())
+				.append("` it will generate `")
+				.append(result.getService().getFarms())
+				.append("` farm(s) every `")
+				.append(result.getService().getInterval())
+				.append("` minute(s) for `")
+				.append(result.getService().getLength())
+				.append("` hour(s).");
+			}
+		}else {
+			sb.append("There was an issue leveling you up.");
+		}
+		return sb.toString();
+	}
+
+	public static CharSequence announceLevel(LevelBean level, long idLong) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(idLong)
+		.append("> You are currently level `")
+		.append(level.getLevel())
+		.append("`");
 		return sb.toString();
 	}
 }

@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import mx.fortson.rehab.bean.BiddableServiceBean;
 import mx.fortson.rehab.bean.DegenBean;
 import mx.fortson.rehab.bean.ItemBean;
+import mx.fortson.rehab.bean.LevelBean;
 import mx.fortson.rehab.bean.PlayerWinsBean;
 import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.constants.DBQueriesConstants;
@@ -27,7 +28,7 @@ public class DatabaseDegens {
 			stmt.setLong(1, id);
 			ResultSet rs = stmt.executeQuery();
 			rs.next();
-			return rs.getInt(1) == 1;
+			return rs.getInt(1)>=1;
 		}
 	}
 
@@ -284,7 +285,7 @@ public class DatabaseDegens {
 			return 0L;
 		}
 	}
-	public static void createService(String serviceName, int farms, double rateHour, int interval, int degenID,boolean predetermined) throws SQLException {
+	public static void createService(String serviceName, int farms, double rateHour, int interval, int degenID,boolean predetermined, int level) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.CREATE_SERVICE)){
 			stmt.setInt(1, farms);
@@ -293,6 +294,7 @@ public class DatabaseDegens {
 			stmt.setInt(4, interval);
 			stmt.setInt(5, degenID);
 			stmt.setBoolean(6, predetermined);
+			stmt.setInt(7, level);
 			stmt.executeUpdate();
 		}
 	}
@@ -317,6 +319,7 @@ public class DatabaseDegens {
 				result.setOwnerDiscordId(rs.getLong(9));
 				result.setPrice(rs.getLong(10));
 				result.setOwnerName(rs.getString(11));
+				result.setRequiredLevel(rs.getInt(12));
 			}
 		}
 		return result;
@@ -376,6 +379,7 @@ public class DatabaseDegens {
 				item.setShortName(rs.getString(8));
 				item.setImageName(item.getActiveStr().equalsIgnoreCase("y") ? "/service.png" : "/inactiveservice.png");
 				item.setService(true);
+				item.setRequiredLevel(rs.getInt(9));
 				result.add(item);
 			}
 		}
@@ -397,6 +401,8 @@ public class DatabaseDegens {
 				item.setForSale(rs.getBoolean(5));
 				item.setValue(rs.getLong(6));
 				item.setActiveStr(rs.getString(7));
+				item.setRequiredLevel(rs.getInt(8));
+				item.setService(true);
 				result.add(item);
 			}
 		}
@@ -464,6 +470,7 @@ public class DatabaseDegens {
 				result.setOwnerDiscordId(rs.getLong(9));
 				result.setPrice(rs.getLong(10));
 				result.setOwnerName(rs.getString(11));
+				result.setRequiredLevel(rs.getInt(12));
 			}
 		}
 		return result;
@@ -611,6 +618,7 @@ public class DatabaseDegens {
 			stmt.setString(3, biddableService.getServiceName());
 			stmt.setInt(4, biddableService.getIntervalMinutes());
 			stmt.setInt(5, getDegenId(biddableService.getWinnerID()));
+			stmt.setLong(6, biddableService.getBid());
 			stmt.executeUpdate();
 		}
 	}
@@ -634,7 +642,7 @@ public class DatabaseDegens {
 		return 0;
 	}
 
-	public static void createPredService(String name, int farms, double durationHours, int rate, int degenId, Long price) throws SQLException {
+	public static void createPredService(String name, int farms, double durationHours, int rate, int degenId, Long price, int level) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.INSERT_PREDETERMINED_SERVICE)){
 			stmt.setInt(1, farms);
@@ -644,6 +652,7 @@ public class DatabaseDegens {
 			stmt.setInt(5, degenId);
 			stmt.setBoolean(6, true);
 			stmt.setLong(7, price);
+			stmt.setInt(8, level);
 			stmt.executeUpdate();
 		}
 	}
@@ -675,7 +684,7 @@ public class DatabaseDegens {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.DEACTIVATE_DEGEN)){
 			stmt.setInt(1, degenId);
-			return stmt.executeUpdate() == 1;
+			return stmt.executeUpdate()>=1;
 		}
 	}
 
@@ -699,7 +708,8 @@ public class DatabaseDegens {
 			stmt.setDouble(2,biddableService.getLengthHours());
 			stmt.setString(3, biddableService.getServiceName());
 			stmt.setInt(4, biddableService.getIntervalMinutes());
-			stmt.setInt(5, getDegenId(biddableService.getWinnerID()));
+			stmt.setInt(5, DatabaseDegens.getDegenId(biddableService.getWinnerID()));
+			stmt.setLong(6, biddableService.getBid());
 			stmt.executeUpdate();
 		}
 	}
@@ -743,7 +753,7 @@ public class DatabaseDegens {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.REACTIVATE_DEGEN)){
 			stmt.setInt(1, degenId);
-			return stmt.executeUpdate() == 1;
+			return stmt.executeUpdate()>=1;
 		}
 	}
 
@@ -761,5 +771,29 @@ public class DatabaseDegens {
 			}
 		}
 		return result;
+	}
+
+	public static void updateLevel(long idLong) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.RAISE_LEVEL)){
+			stmt.setLong(1, idLong);
+			stmt.executeUpdate();
+		}
+	}
+
+	public static LevelBean getDegenNextLevel(long discId) throws SQLException {
+		LevelBean level = null;
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_LEVEL)){
+			stmt.setLong(1, discId);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				level = new LevelBean();
+				level.setCost(rs.getLong(1));
+				level.setFreeService(rs.getBoolean(2));
+				level.setLevel(rs.getInt(3));
+			}
+		}
+		return level;
 	}
 }

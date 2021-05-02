@@ -11,9 +11,8 @@ import mx.fortson.rehab.channels.ServicesShop;
 import mx.fortson.rehab.channels.Shop;
 
 public enum ChannelsEnum {
-
-	DUELARENA("duel-arena",CategoriesEnum.GAMBA,new DuelArena(),0, new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{RolesEnum.IRONMAN}),
 	HIGHLOW("high-low",CategoriesEnum.GAMBA,new HighLow(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	DUELARENA("duel-arena",CategoriesEnum.GAMBA,new DuelArena(),0, new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{RolesEnum.IRONMAN}),
 	BOTDISCUSSION("bot-discussion",CategoriesEnum.BOT,null,0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	BOTCOMMANDS("bot-commands",CategoriesEnum.BOT,new BotCommands(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	ANNOUNCEMENTS("announcements",CategoriesEnum.BOT,null,0,new RolesEnum[]{},new RolesEnum[] {RolesEnum.EVERYONE}),

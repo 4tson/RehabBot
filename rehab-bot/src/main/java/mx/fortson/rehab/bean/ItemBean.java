@@ -17,7 +17,14 @@ public class ItemBean {
 	private boolean forSale;
 	
 	private boolean isService;
+	private int requiredLevel = 1;
 	
+	public int getRequiredLevel() {
+		return requiredLevel;
+	}
+	public void setRequiredLevel(int requiredLevel) {
+		this.requiredLevel = requiredLevel;
+	}
 	public String getShortName() {
 		return shortName;
 	}

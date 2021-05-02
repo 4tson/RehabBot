@@ -56,15 +56,17 @@ public class FarmUtils {
 							farmResultBean.setItemName(itemName);
 							break;
 						case SERVICE:
+							int serviceLevel = RandomUtils.randomInt(20);
 							String serviceName = RandomUtils.randomStringFromArray(farmResult.getType().getPossibleItems());
-							int farmsFarmed = RandomUtils.randomInt(5) + 1;
-							double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(2.0, 5.0)));
-							int interval = RandomUtils.randomInt(5) + 1;
+							int maxFarms = serviceLevel > 2 ? 5 : serviceLevel > 4 ? 6 : serviceLevel > 8 ? 7 : serviceLevel > 12 ? 8 : serviceLevel > 18 ? 9 : 4;
+							int farmsFarmed = RandomUtils.randomInt(maxFarms);
+							double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(1.0, maxFarms * .5)));
+							int interval = RandomUtils.randomInt(6);
 							farmResultBean.setName(serviceName);
 							farmResultBean.setFarms(farmsFarmed);
 							farmResultBean.setRateHours(rateHour);
 							farmResultBean.setInterval(interval);
-							DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(id),false);
+							DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(id),false, serviceLevel);
 							break;
 						}
 						farmList.add(farmResultBean);

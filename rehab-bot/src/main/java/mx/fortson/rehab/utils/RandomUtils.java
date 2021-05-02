@@ -14,6 +14,7 @@ public class RandomUtils {
 	
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
+	
 	public static int randomInt(int size) {
 		return RANDOM.nextInt(size) + 1;
 	}

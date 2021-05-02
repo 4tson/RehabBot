@@ -76,7 +76,7 @@ public class ImageUtils {
 			if(item.isForSale()) {
 				addForSaleIndicator(combined.getGraphics(),x, y, sizesX, sizesY);
 			}
-			addItemId(combined.getGraphics(),String.valueOf(item.getItemID()),x,y,sizesX);
+			addItemId(combined.getGraphics(),String.valueOf(item.getItemID()),x,y,sizesX,item.isService(),sizesY);
 			
 			Long value = item.getValue();
 			totalValue = totalValue + value;
@@ -92,6 +92,12 @@ public class ImageUtils {
 			
 			String descriptor = null;
 			if(item.isService()) {
+				graphic.setFont(osrsFont.deriveFont(12f));
+				String level = String.valueOf(item.getRequiredLevel());
+				int xServiceLevel = (x + (sizesX/2))- graphic.getFontMetrics(graphic.getFont()).stringWidth(level)/2;
+				int yServiceLevel = (y + (sizesY/2))- graphic.getFontMetrics(graphic.getFont()).getHeight()/2;
+				graphic.drawString(level, xServiceLevel, yServiceLevel + 10);
+				
 				descriptor = item.getShortName();
 				graphic.setFont(osrsFont.deriveFont(9f));
 			}else {
@@ -131,11 +137,14 @@ public class ImageUtils {
 		graphic.dispose();
 	}
 
-	private static void addItemId(Graphics graphics, String idString,int x, int y, int sizesX) {
-		FontMetrics metrics = graphics.getFontMetrics(osrsFont.deriveFont(11f));
-		graphics.setFont(osrsFont.deriveFont(10f));
-		int xIDValue = x + sizesX - metrics.stringWidth(idString);
-		int yIDValue = y + metrics.getHeight();
+	private static void addItemId(Graphics graphics, String idString,int x, int y, int sizesX,boolean service, int sizesY) {
+		int xIDValue = 0;
+		int yIDValue = 0 ;
+		FontMetrics metrics = graphics.getFontMetrics(osrsFont.deriveFont(12f));
+		graphics.setFont(osrsFont.deriveFont(12f));
+		xIDValue=(x + (sizesX/2))- metrics.stringWidth(idString)/2;
+		yIDValue = (y + (sizesY/2))- metrics.getHeight()/2 - 10;
+		
 		graphics.drawString(idString, xIDValue, yIDValue - 2);
 		graphics.dispose();
 	}
@@ -152,7 +161,7 @@ public class ImageUtils {
 
 	private static void addForSaleIndicator(Graphics graphics, int x, int y, int sizesX, int sizesY) throws IOException {
 		BufferedImage shopIndicator;
-		try(InputStream shopIndIS = ImageUtils.class.getResourceAsStream("/shopindicator.png")){
+		try(InputStream shopIndIS = ImageUtils.class.getResourceAsStream(ImagesEnum.SHOP_INDICATOR.getFileName())){
 			shopIndicator = ImageIO.read(shopIndIS);
 		}
 		graphics.setColor(ColorsEnum.OSRSORANGE.getColor());

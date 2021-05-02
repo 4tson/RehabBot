@@ -13,9 +13,12 @@ import java.util.Timer;
 
 import mx.fortson.rehab.bean.DegenBean;
 import mx.fortson.rehab.bean.ItemBean;
+import mx.fortson.rehab.bean.LevelBean;
+import mx.fortson.rehab.bean.LevelUpResultBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.bean.ServiceTimerTaskPair;
+import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.enums.CategoriesEnum;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.PredefinedServicesEnum;
@@ -27,6 +30,7 @@ import mx.fortson.rehab.listeners.ServiceListener;
 import mx.fortson.rehab.tasks.KillServiceTask;
 import mx.fortson.rehab.utils.FormattingUtils;
 import mx.fortson.rehab.utils.MessageUtils;
+import mx.fortson.rehab.utils.RandomUtils;
 import mx.fortson.rehab.utils.ServicesUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -92,7 +96,7 @@ public class RehabBot {
 		try {
 			degenId = DatabaseDegens.getDegenId(botDiscId);
 			for(PredefinedServicesEnum service : PredefinedServicesEnum.values()) {
-				DatabaseDegens.createPredService(service.getName(), service.getFarms(), service.getDurationHours(), service.getRate(), degenId,FormattingUtils.parseAmount(service.getPrice()));
+				DatabaseDegens.createPredService(service.getName(), service.getFarms(), service.getDurationHours(), service.getRate(), degenId,FormattingUtils.parseAmount(service.getPrice()),service.getLevel());
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -191,7 +195,6 @@ public class RehabBot {
 		
 		List<ServiceBean> runningServices = DatabaseDegens.getRunningServices();
 		for(ServiceBean runningService : runningServices) {
-			System.out.println(runningService.getServiceId());
 			Member member = getGuild().getMemberById(runningService.getOwnerDiscordId());
 			if(null!=member) {
 				Long timeToRun = (long) (1000 * 60 * 60 * runningService.getLength());
@@ -225,7 +228,6 @@ public class RehabBot {
 				
 				ServicesUtils.addCancellableService(runningService.getServiceId(), new ServiceTimerTaskPair(kstTimer,kst));
 			}else {
-				System.out.println("found active service with inactive member");
 				deactivateDegen(runningService.getOwnerDiscordId());
 			}
 		}
@@ -234,11 +236,9 @@ public class RehabBot {
 	}
 
 	public static void deleteDegen(Long discordId) {
-		System.out.println("deleting degen, first we deactivate");
 		if(deactivateDegen(discordId)) {
 			try {
 				DatabaseDegens.deleteDegen(DatabaseDegens.getDegenId(discordId));
-				System.out.println("deleted degen");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -249,9 +249,7 @@ public class RehabBot {
 			if(DatabaseDegens.existsById(discordId)) {
 				int degenId = DatabaseDegens.getDegenId(discordId);
 				boolean deactivated = deactivateDegen(degenId);
-				System.out.println("user was deactivated from db");
 				if(deactivated) {
-					System.out.println("removing roles");
 					if(getGuild().getMemberById(discordId)!=null) {
 						for(Role role : getGuild().getMemberById(discordId).getRoles()) {
 							if(RolesEnum.isRemovable(role.getName())) {
@@ -259,7 +257,6 @@ public class RehabBot {
 							}
 						}
 					}
-					System.out.println("Stopping running services");
 					for(int serviceId : DatabaseDegens.getDegenActiveServicesId(degenId)) {
 						ServicesUtils.stopService(serviceId);
 					}
@@ -267,7 +264,6 @@ public class RehabBot {
 				
 				return deactivated; 
 			}else {
-				System.out.println("user is not active or does not exist in db");
 				return false;
 			}
 		}catch(SQLException e) {
@@ -317,9 +313,7 @@ public class RehabBot {
 						if(insertResult>1) {
 							ServiceBean predService = DatabaseDegens.selectDegenPredService(degenId);
 							if(predService!=null) {
-								System.out.println("degen had service from shop");
 								if(ServicesUtils.canActivateService(id)) {
-									System.out.println("can activate service from shop");
 									ServicesUtils.activateService(predService);
 								}
 							}
@@ -328,7 +322,7 @@ public class RehabBot {
 					}
 				}else {
 					System.out.println("inserting new degen");
-					if(DatabaseDegens.insertNewDegen(id,name,iron)>1) {
+					if(DatabaseDegens.insertNewDegen(id,name,iron)>=1) {
 						result =  RegisterResultEnum.SUCCESS;
 					}
 				}
@@ -371,5 +365,35 @@ public class RehabBot {
 
 	public static Long getBotId() {
 		return getApi().getSelfUser().getIdLong();
+	}
+
+	public static LevelUpResultBean levelUp(long idLong, LevelBean nextLevel) {
+		LevelUpResultBean result = new LevelUpResultBean();
+		try {
+			Long funds = DatabaseDegens.getFundsById(idLong);
+			if(funds>=nextLevel.getCost()) {
+				DatabaseDegens.updateLevel(idLong);
+				if(nextLevel.isFreeService()) {
+					int serviceLevel = nextLevel.getLevel() + 1;
+					String serviceName = RandomUtils.randomStringFromArray(RehabBotConstants.SERVICE_NAMES);
+					int maxFarms = serviceLevel > 2 ? 5 : serviceLevel > 4 ? 6 : serviceLevel > 8 ? 7 : serviceLevel > 12 ? 8 : serviceLevel > 18 ? 9 : 4;
+					int farmsFarmed = RandomUtils.randomInt(Math.toIntExact(Math.round(maxFarms*1.5)));
+					double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(3.0, maxFarms)));
+					int interval = RandomUtils.randomInt(6);
+					if(interval>farmsFarmed) {
+						farmsFarmed = interval;
+					}
+					ServiceBean service = new ServiceBean(0, farmsFarmed, rateHour, serviceName, interval, false);
+					DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(idLong),false, serviceLevel);
+					result.setService(service);
+					result.setFreeService(true);
+				}
+				result.setNewLevel(nextLevel.getLevel() + 1);
+				result.setLevelUp(true);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 }

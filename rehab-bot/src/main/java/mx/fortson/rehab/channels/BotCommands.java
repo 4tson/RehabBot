@@ -7,17 +7,20 @@ import java.util.List;
 import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.bean.Degen;
 import mx.fortson.rehab.bean.ItemBean;
+import mx.fortson.rehab.bean.LevelBean;
 import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RegisterResultEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
 import mx.fortson.rehab.enums.RolesEnum;
+import mx.fortson.rehab.listeners.LevelUpStateMachine;
 import mx.fortson.rehab.listeners.WipeStateMachine;
 import mx.fortson.rehab.utils.FarmUtils;
 import mx.fortson.rehab.utils.FundUtils;
 import mx.fortson.rehab.utils.InventoryUtils;
 import mx.fortson.rehab.utils.LeaderBoardUtils;
+import mx.fortson.rehab.utils.LevelUtils;
 import mx.fortson.rehab.utils.MessageUtils;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.PrivateChannel;
@@ -67,6 +70,19 @@ public class BotCommands implements IChannel{
 							event.getGuild().addRoleToMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.ANNOUNCEMENTS)).queue();
 						}
 						channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(), RolesEnum.ANNOUNCEMENTS.getName(), action)).allowedMentions(new ArrayList<>()).queue();
+						break;
+					case LEVELUP:
+						LevelBean level = LevelUtils.getNextLevel(author.getIdLong());
+						if(level!=null) {
+							channel.sendMessage(MessageUtils.confirmLevelUp(author.getIdLong(), level)).allowedMentions(new ArrayList<>()).queue();
+							RehabBot.getApi().addEventListener(new LevelUpStateMachine(author.getIdLong(),level, event.getMessageIdLong()));
+						}else {
+							channel.sendMessage("Could not retrieve level data, try again later.").queue();
+						}
+						break;
+					case CHECKLEVEL:
+						LevelBean levelCheck = LevelUtils.getNextLevel(author.getIdLong());
+						channel.sendMessage(MessageUtils.announceLevel(levelCheck,author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 						break;
 					default:
 						commonCommands(ChannelsEnum.BOTCOMMANDS,commandEnum, event);

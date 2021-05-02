@@ -7,8 +7,8 @@ public enum FarmResultEnum {
 			"You found `{amount}` on the ground, so lucky!",
 			"Jagex bug resulted in you getting `{amount}` in your bank."
 			}, 
-			new Long[]{1000000L,25000000L},
-			0.5,
+			new Long[]{1000000L,2500000L},
+			0.58,
 			FarmTypeEnum.CASH),
 	CLUE_GOOD(new String[]{
 			"You completed a Hard clue for `{amount}`",
@@ -36,13 +36,13 @@ public enum FarmResultEnum {
 			"You decide to go back to CoX, as if thats going to help. Wait... is that a purple? Your loot is worth `{amount}`"
 			}, 
 			new Long[]{7699443L,1020160391L},
-			0.022,
+			0.01,
 			FarmTypeEnum.CASH),
 	TOB_DROP(new String[]{
 			"Maybe ToB is going to be good today. 416, LFR, sigh... What's the difference? Your loot is worth `{amount}`"
 			}, 
 			new Long[]{7156790L,564115278L},
-			0.022,
+			0.01,
 			FarmTypeEnum.CASH),
 	ITEM_MEH(new String[]{
 			"You go do some PVM as a good reformed kid. Neat, this is worth `{amount}`",
@@ -51,7 +51,7 @@ public enum FarmResultEnum {
 			"Falador party room never dissapoints. It's worth `{amount}`!"
 			}, 
 			new Long[]{1000000L,20000000L},
-			0.0077,
+			0.0057,
 			FarmTypeEnum.ITEM_MEH),
 	ITEM_GREAT(new String[]{
 			"See, these are the kind of drops I'm talking about! `{amount}`!!!",
@@ -60,13 +60,13 @@ public enum FarmResultEnum {
 			"BEHEMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOTH. `{amount}`"
 			}, 
 			new Long[]{100000000L,2000000000L},
-			0.001,
+			0.0008,
 			FarmTypeEnum.ITEM_GREAT),
 	ITEM_UNIQUE(new String[]{
 			"What even is this? There's no way right? Seems too expensive..."
 			}, 
 			new Long[]{10000000000L,20000000000L},
-			0.0001,
+			0.00009,
 			FarmTypeEnum.ITEM_UNIQUE),
 	SERVICE(new String[]{
 			"This might be useful.",

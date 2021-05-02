@@ -80,18 +80,22 @@ public class ServicesUtils {
 						//send message can't activate service that is for sale
 						result = "You cannot activate a service that is currently for sale. Try `!cancelservice [id]` in the shop.";
 					}else {
-						if(service.isActive()) {
-							//send message can't activate service that is already active
-							result = "You cannot activate a service that is already running! Look for it under the services category. Otherwise ping a dev cause that shid is messed up.";
+						if(service.getRequiredLevel()>DatabaseDegens.getDegenNextLevel(discId).getLevel()) {
+							result = "You do not have the required level of `" + service.getRequiredLevel() + "` to activate this service.";
 						}else {
-							if(DatabaseDegens.getActiveServicesCount()==50) {
-								result = "There are too many active services right now. Please wait for another service to finish.";
+							if(service.isActive()) {
+								//send message can't activate service that is already active
+								result = "You cannot activate a service that is already running! Look for it under the services category. Otherwise ping a dev cause that shid is messed up.";
 							}else {
-								if(DatabaseDegens.getUserActiveServicesCount(DatabaseDegens.getDegenId(discId))>=5) {
-									result = "You have reached your limit of 5 active services. Either wait for one of them to finish or `!cancel` it.";
+								if(DatabaseDegens.getActiveServicesCount()==50) {
+									result = "There are too many active services right now. Please wait for another service to finish.";
 								}else {
-									activateService(service);
-									result = "Service activated!";
+									if(DatabaseDegens.getUserActiveServicesCount(DatabaseDegens.getDegenId(discId))>=5) {
+										result = "You have reached your limit of 5 active services. Either wait for one of them to finish or `!cancel` it.";
+									}else {
+										activateService(service);
+										result = "Service activated!";
+									}
 								}
 							}
 						}
@@ -124,21 +128,25 @@ public class ServicesUtils {
 				result.setFlavourText("You have reached your limit of 5 active services. Either wait for one of them to finish or `!cancel` it.");
 			}else if(null!=service) {
 				Long degenFunds = DatabaseDegens.getFundsById(idLong);
-				if(degenFunds>service.getPrice()) {
-					int userPredServices = DatabaseDegens.countDegenPredService(idLong);
-					if(userPredServices == 0) {
-						int degenId = DatabaseDegens.getDegenId(idLong);
-						DatabaseDegens.updateFundsSum(-service.getPrice(), degenId);
-						DatabaseDegens.createService(RandomUtils.randomStringFromArray(RehabBotConstants.SERVICE_NAMES), service.getFarms(), service.getLength(), service.getInterval(), degenId, true);
-						ServiceBean createdService = DatabaseDegens.getDegenPredeterminedService(degenId);
-						activateService(createdService);
-						result.setSale(true);
-						result.setService(createdService);
+				if(DatabaseDegens.getDegenNextLevel(idLong).getLevel()>=service.getRequiredLevel()) {
+					if(degenFunds>service.getPrice()) {
+						int userPredServices = DatabaseDegens.countDegenPredService(idLong);
+						if(userPredServices == 0) {
+							int degenId = DatabaseDegens.getDegenId(idLong);
+							DatabaseDegens.updateFundsSum(-service.getPrice(), degenId);
+							DatabaseDegens.createService(RandomUtils.randomStringFromArray(RehabBotConstants.SERVICE_NAMES), service.getFarms(), service.getLength(), service.getInterval(), degenId, true,service.getRequiredLevel());
+							ServiceBean createdService = DatabaseDegens.getDegenPredeterminedService(degenId);
+							activateService(createdService);
+							result.setSale(true);
+							result.setService(createdService);
+						}else {
+							result.setFlavourText("You already own a service from the service shop. Look under the `MY-SERVICES` category or in your `!inv`");
+						}
 					}else {
-						result.setFlavourText("You already own a service from the service shop. Look under the `MY-SERVICES` category or in your `!inv`");
+						result.setFlavourText("You do not have the bank value to buy this service.");	
 					}
 				}else {
-					result.setFlavourText("You do not have the bank value to buy this service.");
+					result.setFlavourText("You do not have the level required to buy this service.");
 				}
 			}else{
 				result.setFlavourText("The service you are trying to buy does not exist.");
@@ -209,11 +217,6 @@ public class ServicesUtils {
 		servicesChannel.getManager().setSlowmode(0).queue();
 		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getOrCreateRole(RolesEnum.SERVICES).getIdLong())).queue();
 		RehabBot.getApi().addEventListener(new ServiceStateMachine(biddableService));
-		try {
-			DatabaseDegens.insertBiddableService(biddableService);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	public static void restoreBiddableService() {
@@ -245,11 +248,14 @@ public class ServicesUtils {
 					kstTimer.schedule(kst, new Date(expireTime));
 					servicesChannel.sendMessage(biddableService.info()).allowedMentions(new ArrayList<>()).queue();
 				}else {
+					//The biddable service was not active so we just create a new one same as always
 					createNewService(new BiddableServiceBean(biddableService));
 				}
 			}else {
-				//The biddable service was not active so we just create a new one same as always
-				createNewService(new BiddableServiceBean());
+				//The biddable service did not exist so we just create a new one and insert it into the database
+				BiddableServiceBean newBiddableService = new BiddableServiceBean();
+				createNewService(newBiddableService);
+				DatabaseDegens.insertBiddableService(newBiddableService);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

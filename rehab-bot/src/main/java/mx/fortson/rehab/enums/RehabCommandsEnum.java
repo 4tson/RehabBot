@@ -67,6 +67,9 @@ public enum RehabCommandsEnum {
 	
 	CASHOUT("!cashout","Take your farms and get out of here.",ChannelsEnum.HIGHLOW,true),
 	
+	LEVELUP("!levelup","Pay a bit of money to level up and unlock some perks by doing so.",ChannelsEnum.BOTCOMMANDS,true),
+	
+	CHECKLEVEL("!level","Get your current level.", ChannelsEnum.BOTCOMMANDS, true),
 	;
 	
 	
