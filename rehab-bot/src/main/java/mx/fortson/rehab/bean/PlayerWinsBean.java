@@ -49,6 +49,6 @@ public class PlayerWinsBean {
 	}
 
 	public int cashOut() {
-		return this.currentFarms;
+		return this.currentFarms + 10;
 	}	
 }
