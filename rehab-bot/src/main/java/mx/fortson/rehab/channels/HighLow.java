@@ -188,6 +188,9 @@ public final class HighLow implements IChannel{
 		}else {
 			sb.append("You don't have any farms to cash out.");
 		}
+		sb.append(" The current number to bet on is `")
+		.append(number)
+		.append("`");
 		return sb.toString();
 	}
 
