@@ -9,7 +9,6 @@ import mx.fortson.rehab.bean.Degen;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.LevelBean;
 import mx.fortson.rehab.bean.PagedImageMessageBean;
-import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RegisterResultEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
@@ -84,6 +83,14 @@ public class BotCommands implements IChannel{
 						LevelBean levelCheck = LevelUtils.getNextLevel(author.getIdLong());
 						channel.sendMessage(MessageUtils.announceLevel(levelCheck,author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 						break;
+					case ADDUNIQUES:
+						event.getGuild().addRoleToMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.UNIQUES)).queue();
+						channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),RolesEnum.UNIQUES.getName(),"added")).allowedMentions(new ArrayList<>()).queue();
+						break;
+					case REMUNIQUES:
+						event.getGuild().removeRoleFromMember(event.getMember(), RehabBot.getOrCreateRole(RolesEnum.UNIQUES)).queue();
+						channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),RolesEnum.UNIQUES.getName(),"removed")).allowedMentions(new ArrayList<>()).queue();
+						break;
 					default:
 						commonCommands(ChannelsEnum.BOTCOMMANDS,commandEnum, event);
 						break;	
@@ -106,12 +113,19 @@ public class BotCommands implements IChannel{
 			channel.sendMessage(MessageUtils.getAvailableRehabCommands(channelEnum)).queue();
 			break;
 		case LDRBOARD:
-			PagedMessageBean paging = MessageUtils.getLeaderBoardMessage(LeaderBoardUtils.getLeaderBoard());
-			while(paging.isMoreRecords()) {
-				channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
-				paging = MessageUtils.getLeaderBoardMessage((List<Degen>)(Object)paging.getLeftOverRecords());
+			int ldrImageCount = 0;
+			PagedImageMessageBean ldrResult = MessageUtils.getLeaderBoardImage(LeaderBoardUtils.getLeaderBoard());
+			MessageAction ldrMessageAction = channel.sendMessage("Here is the current leaderboard:");
+			while(ldrResult.isMoreRecords()) {
+				ldrImageCount++;
+				ldrMessageAction = ldrMessageAction.addFile(ldrResult.getImageBytes(),ldrResult.getImageName());
+				ldrResult = MessageUtils.getLeaderBoardImage((List<Degen>)(Object)ldrResult.getLeftOverRecords());
+				if(ldrImageCount==10) {
+					ldrMessageAction.complete();
+					ldrImageCount = 0;
+				}
 			}
-			channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
+			ldrMessageAction.addFile(ldrResult.getImageBytes(), ldrResult.getImageName()).queue();
 			break;
 		case INVENTORY:
 			int imageCount = 0;

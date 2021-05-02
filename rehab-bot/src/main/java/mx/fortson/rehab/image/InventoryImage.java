@@ -1,7 +1,6 @@
-package mx.fortson.rehab.utils;
+package mx.fortson.rehab.image;
 
 import java.awt.Font;
-import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -16,49 +15,23 @@ import javax.imageio.ImageIO;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.enums.ColorsEnum;
-import mx.fortson.rehab.enums.FontsEnum;
 import mx.fortson.rehab.enums.ImagesEnum;
+import mx.fortson.rehab.utils.FormattingUtils;
 
-public class ImageUtils {
-	
-	private static Font osrsFont;
-	
-	static {
-		try(InputStream is = ImageUtils.class.getResourceAsStream(FontsEnum.OSRS.getFileName())){
-			osrsFont = Font.createFont(Font.TRUETYPE_FONT,is).deriveFont(15f);
-		} catch (FontFormatException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static Font scaleFontToFit(String text, int width, Graphics g, Font pFont)
-	{
-	    float fontSize = pFont.getSize();
-	    float fWidth = g.getFontMetrics(pFont).stringWidth(text);
-	    if(fWidth <= width) {
-	        return pFont;
-	    }
-	    fontSize = ((float)width / fWidth) * fontSize;
-	    return pFont.deriveFont(fontSize);
-	}
+public class InventoryImage {
 
 	public static PagedImageMessageBean generateInventoryImage(List<ItemBean> inventory, String name) throws IOException {
 		BufferedImage inventoryBase;
-		try(InputStream is = ImageUtils.class.getResourceAsStream(ImagesEnum.INVENTORY.getFileName())) {
+		try(InputStream is = InventoryImage.class.getResourceAsStream(ImagesEnum.INVENTORY.getFileName())) {
 			inventoryBase = ImageIO.read(is);	
 		}
 		
 		PagedImageMessageBean result = new PagedImageMessageBean();
 		List<ItemBean> leftover = new ArrayList<>(inventory);
 		
-		
-		
 		BufferedImage combined = new BufferedImage(inventoryBase.getWidth(), inventoryBase.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics graphic = combined.getGraphics();
 		graphic.drawImage(inventoryBase,0,0,null);
-		graphic.setFont(osrsFont);
 		graphic.dispose();
 		
 		String titleString = name + "'s inventory";
@@ -83,7 +56,7 @@ public class ImageUtils {
 			
 			graphic = combined.getGraphics();
 			BufferedImage itemImage;
-			try(InputStream imageIS = ImageUtils.class.getResourceAsStream("/items" + item.getImageName().toLowerCase())){
+			try(InputStream imageIS = InventoryImage.class.getResourceAsStream("/items" + item.getImageName().toLowerCase())){
 				itemImage = ImageIO.read(imageIS);
 			}
 			int xIValue = (x + (sizesX/2)) - (itemImage.getWidth()/2);
@@ -92,17 +65,17 @@ public class ImageUtils {
 			
 			String descriptor = null;
 			if(item.isService()) {
-				graphic.setFont(osrsFont.deriveFont(12f));
+				graphic.setFont(FontManager.OSRS_FONT.deriveFont(12f));
 				String level = String.valueOf(item.getRequiredLevel());
 				int xServiceLevel = (x + (sizesX/2))- graphic.getFontMetrics(graphic.getFont()).stringWidth(level)/2;
 				int yServiceLevel = (y + (sizesY/2))- graphic.getFontMetrics(graphic.getFont()).getHeight()/2;
 				graphic.drawString(level, xServiceLevel, yServiceLevel + 10);
 				
 				descriptor = item.getShortName();
-				graphic.setFont(osrsFont.deriveFont(9f));
+				graphic.setFont(FontManager.OSRS_FONT.deriveFont(9f));
 			}else {
 				descriptor = FormattingUtils.format(value,false);
-				graphic.setFont(osrsFont.deriveFont(13f));
+				graphic.setFont(FontManager.OSRS_FONT.deriveFont(13f));
 			}
 			
 			int xSValue = (x + (sizesX/2))- graphic.getFontMetrics(graphic.getFont()).stringWidth(descriptor)/2;
@@ -131,17 +104,17 @@ public class ImageUtils {
 	}
 
 	private static void addValue(Graphics graphic, String totalString, int width, int height) {
-		graphic.setFont(osrsFont);
+		graphic.setFont(FontManager.OSRS_FONT);
 		graphic.setColor(ColorsEnum.OSRSORANGE.getColor());
-		graphic.drawString(totalString, (width/2) - graphic.getFontMetrics(osrsFont).stringWidth(totalString)/2, height - 15);
+		graphic.drawString(totalString, (width/2) - graphic.getFontMetrics(FontManager.OSRS_FONT).stringWidth(totalString)/2, height - 15);
 		graphic.dispose();
 	}
 
 	private static void addItemId(Graphics graphics, String idString,int x, int y, int sizesX,boolean service, int sizesY) {
 		int xIDValue = 0;
 		int yIDValue = 0 ;
-		FontMetrics metrics = graphics.getFontMetrics(osrsFont.deriveFont(12f));
-		graphics.setFont(osrsFont.deriveFont(12f));
+		FontMetrics metrics = graphics.getFontMetrics(FontManager.OSRS_FONT.deriveFont(12f));
+		graphics.setFont(FontManager.OSRS_FONT.deriveFont(12f));
 		xIDValue=(x + (sizesX/2))- metrics.stringWidth(idString)/2;
 		yIDValue = (y + (sizesY/2))- metrics.getHeight()/2 - 10;
 		
@@ -150,7 +123,7 @@ public class ImageUtils {
 	}
 
 	private static void addTitle(String titleString, int width, Graphics graphic) {
-		Font titleFont = scaleFontToFit(titleString, width-20, graphic, osrsFont);
+		Font titleFont = FontManager.scaleFontToFit(titleString, width-20, graphic, FontManager.OSRS_FONT);
 		FontMetrics metrics = graphic.getFontMetrics(titleFont);
 		int xS = (width/2) - metrics.stringWidth(titleString)/2;
 		graphic.setFont(titleFont);
@@ -161,7 +134,7 @@ public class ImageUtils {
 
 	private static void addForSaleIndicator(Graphics graphics, int x, int y, int sizesX, int sizesY) throws IOException {
 		BufferedImage shopIndicator;
-		try(InputStream shopIndIS = ImageUtils.class.getResourceAsStream(ImagesEnum.SHOP_INDICATOR.getFileName())){
+		try(InputStream shopIndIS = InventoryImage.class.getResourceAsStream(ImagesEnum.SHOP_INDICATOR.getFileName())){
 			shopIndicator = ImageIO.read(shopIndIS);
 		}
 		graphics.setColor(ColorsEnum.OSRSORANGE.getColor());

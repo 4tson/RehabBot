@@ -36,6 +36,7 @@ public final class HighLow implements IChannel{
 			@Override
 			public void run() {
 				RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateNewNumberMessage()).allowedMentions(new ArrayList<>()).queue();
+				RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).getManager().setTopic("Current number is " + number).queue();
 				highLowTask.cancel();
 				timer.purge();
 				highLowTask = null;
@@ -56,6 +57,7 @@ public final class HighLow implements IChannel{
 						equal = number==oldNumber;
 					}
 					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateGameEndMessage(oldNumber)).allowedMentions(new ArrayList<>()).queue();
+					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).getManager().setTopic("Current number is " + number).queue();
 					List<Long> losers = new ArrayList<>();
 					for(Entry<Long,PlayerWinsBean> entry : playersWins.entrySet()) {
 						if(playersBets.containsKey(entry.getKey())) {
@@ -181,10 +183,10 @@ public final class HighLow implements IChannel{
 		if(playersWins.containsKey(idLong)) {
 			PlayerWinsBean playerWins = playersWins.get(idLong);
 			sb.append("You could cash out ")
-			.append((int) (Math.ceil(playerWins.getCurrentFarms() * playerWins.getRate())))
+			.append(playerWins.cashOut())
 			.append(" farm(s). Your current rate is ")
 			.append(String.format("%.2f", playerWins.getRate()))
-			.append(" Every game that gets played without you participating or cashing out lowers your rate by .10, to a limit of .10.");
+			.append(" Every game that gets played without you participating or cashing out lowers your rate by .30, winning a game ups it by .10 up capped at .10 and 2 respectively.");
 		}else {
 			sb.append("You don't have any farms to cash out.");
 		}

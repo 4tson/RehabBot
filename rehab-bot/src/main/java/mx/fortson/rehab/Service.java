@@ -61,7 +61,6 @@ public class Service extends TimerTask {
 	}
 	
 	public void stopService() {
-		System.out.println("Removing channel for service " + serviceID + " due to stoppage");
 		RehabBot.getApi().getTextChannelById(channelId).delete().queue();
 		RehabBot.getApi().removeEventListener(sl);
 		cancel();

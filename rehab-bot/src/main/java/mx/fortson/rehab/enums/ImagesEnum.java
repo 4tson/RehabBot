@@ -3,8 +3,9 @@ package mx.fortson.rehab.enums;
 public enum ImagesEnum {
 
 	INVENTORY("/inventory.png"),
-	LEVELICON("/levelicon.png"),
-	SHOP_INDICATOR("/shopindicator.png");
+	SHOP_INDICATOR("/shopindicator.png"),
+	LEADERBOARD("/leaderboard.png"),
+	IRON_INDICATOR("/btwHelmet.png"),
 	;
 	
 	private String fileName;

@@ -3,9 +3,11 @@ package mx.fortson.rehab.utils;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import mx.fortson.rehab.DatabaseDegens;
+import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.bean.BankBean;
 import mx.fortson.rehab.bean.BiddableServiceBean;
 import mx.fortson.rehab.bean.Degen;
@@ -25,6 +27,10 @@ import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.FarmTypeEnum;
 import mx.fortson.rehab.enums.RegisterResultEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
+import mx.fortson.rehab.enums.RolesEnum;
+import mx.fortson.rehab.image.InventoryImage;
+import mx.fortson.rehab.image.LeaderboardImage;
+import net.dv8tion.jda.api.entities.Message.MentionType;
 
 public class MessageUtils {
 
@@ -137,8 +143,10 @@ public class MessageUtils {
 			for(FarmResultBean farmResult : farmCollectionBean.getFarms()) {
 				if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-260){
 					if(farmResult.getType().equals(FarmTypeEnum.ITEM_UNIQUE) || farmResult.getType().equals(FarmTypeEnum.SERVICE)){
-						sb.append("@here - ");
-						result.setPingList(null);
+						sb.append("<@&")
+						.append(RehabBot.getOrCreateRole(RolesEnum.UNIQUES))
+						.append("> - ");
+						result.setPingList(Collections.singletonList(MentionType.ROLE));
 					}
 					switch(farmResult.getType()) {
 					case CASH:
@@ -203,53 +211,6 @@ public class MessageUtils {
 		return result;
 	}
 
-	public static PagedMessageBean getLeaderBoardMessage(List<Degen> leaderBoard) {
-		PagedMessageBean paging = new PagedMessageBean();
-		
-		StringBuilder sb = new StringBuilder();
-		List<Degen> leftovers = new ArrayList<>(leaderBoard);
-		
-		sb.append("`+-------------------------------------------------------------------+\r\n"
-				+ "|                           Leaderboard                             |\r\n"
-				+ "+-------------------+----------+----------+--------+--------+-------+\r\n"
-				+ "|       Degen       |   Bank   |   Peak   | Avail. | Times  |  W/L  |\r\n"
-				+ "|                   |          |          | Farms  | Farmed |       |\r\n"
-				+ "+-------------------+----------+----------+--------+--------+-------+\r\n");
-		for(Degen degen : leaderBoard) {
-			if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-138){
-				sb.append("|")
-				.append(FormattingUtils.tableFormat(degen.getName(),19))
-				.append("|")
-				.append(FormattingUtils.tableFormat(FormattingUtils.format(degen.getBank()),10))
-				.append("|")
-				.append(FormattingUtils.tableFormat(FormattingUtils.format(degen.getPeak()),10))
-				.append("|")
-				.append(FormattingUtils.tableFormat(String.valueOf(degen.getFarmAttempts()),8))
-				.append("|")
-				.append(FormattingUtils.tableFormat(String.valueOf(degen.getTimesFarmed()),8))
-				.append("|")
-				.append(FormattingUtils.tableFormat(degen.getWins() + "/" + degen.getLosses(),7))
-				.append("|\r\n")
-				.append("+-------------------+----------+----------+--------+--------+-------+\r\n");
-				leftovers.remove(degen);
-			}else {
-				sb.deleteCharAt(sb.length()-1);
-				sb.append("`");
-				paging.setMoreRecords(true);
-				paging.setMessage(sb.toString());
-				paging.setLeftOverRecords(leftovers);
-				break;
-			}
-		}
-		if(!paging.isMoreRecords()) {
-			sb.deleteCharAt(sb.length()-1);
-			sb.append("`");
-			paging.setMoreRecords(false);
-			paging.setMessage(sb.toString());
-		}
-		return paging;
-	}
-
 	public static CharSequence getDuelResult(DuelResultBean duelResult) {
 		if(duelResult.getFlavourText()!=null) {
 			return duelResult.getFlavourText();
@@ -281,7 +242,7 @@ public class MessageUtils {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("`+-----------------------------------------------------------------------------------------------------+\r\n"
+		sb.append("`+----------------------------------------------------------------------------------------------------+\r\n"
 				+ "|                                            Shop                                                     |\r\n"
 				+ "+----------------+------------------------+---------------+---------------+-----------------+---------+\r\n"
 				+ "|       ID       |          Name          |     Owner     |     Price     |      Value      |  Level  |\r\n"
@@ -346,7 +307,7 @@ public class MessageUtils {
 		
 		PagedImageMessageBean result = new PagedImageMessageBean();
 		try {
-			result = ImageUtils.generateInventoryImage(inventory,name);
+			result = InventoryImage.generateInventoryImage(inventory,name);
 			result.setMoreRecords(!result.getLeftOverRecords().isEmpty());
 			result.setImageName(name + "_inv_" + System.currentTimeMillis() + ".png");
 		}catch(IOException e) {
@@ -354,59 +315,6 @@ public class MessageUtils {
 			result.setMessage("Could not generate inventory");
 		}
 		return result;
-	}
-	
-	
-	public static PagedMessageBean getInventory(List<ItemBean> inventory, String name) {
-		PagedMessageBean paging = new PagedMessageBean();
-		if(inventory.isEmpty()) {
-			paging.setMessage("You don't have any items, try farming, or dueling for money and then snatch items from the shop!");
-			return paging;
-		}
-		
-		List<ItemBean> leftovers = new ArrayList<>(inventory);
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("`+----------------------------------------------------------------------------------------------+\r\n")
-		.append("|")
-		.append(FormattingUtils.tableFormat(name + "'s Inventory",95))
-		.append("|\r\n"
-				+ "+----------------+------------------------+----------------+-------+-----------------+---------+\r\n"
-				+ "|       ID       |          Name          |     Price      | Sale? |      Value      | Active? |\r\n"
-				+ "+----------------+------------------------+----------------+-------+-----------------+---------+\r\n");
-		for(ItemBean item : inventory){
-			if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-196){
-				sb.append("|")
-				.append(FormattingUtils.tableFormat(String.valueOf(item.getItemID()),16))
-				.append("|")
-				.append(FormattingUtils.tableFormat(item.getItemName(),24))
-				.append("|")
-				.append(FormattingUtils.tableFormat(FormattingUtils.format(item.getPrice()),16))
-				.append("|")	
-				.append(FormattingUtils.tableFormat(item.isForSale() ? "Y": "N",7))
-				.append("|")
-				.append(FormattingUtils.tableFormat(FormattingUtils.format(item.getValue()),17))
-				.append("|")
-				.append(FormattingUtils.tableFormat(item.getActiveStr(),9))
-				.append("|\r\n")
-				.append("+----------------------------------------------------------------------------------------------+\r\n");
-				leftovers.remove(item);
-			}else {
-				sb.deleteCharAt(sb.length()-1);
-				sb.append("`");
-				paging.setMoreRecords(true);
-				paging.setMessage(sb.toString());
-				paging.setLeftOverRecords(leftovers);
-				break;
-			}
-		}
-		if(!paging.isMoreRecords()) {
-			sb.deleteCharAt(sb.length()-1);
-			sb.append("`");
-			paging.setMoreRecords(false);
-			paging.setMessage(sb.toString());
-		}
-		return paging;
 	}
 
 	public static CharSequence announceSale(boolean putForSale, String flavourText, long id) {
@@ -653,5 +561,18 @@ public class MessageUtils {
 		.append(level.getLevel())
 		.append("`");
 		return sb.toString();
+	}
+
+	public static PagedImageMessageBean getLeaderBoardImage(List<Degen> leaderBoard) {
+		PagedImageMessageBean result = new PagedImageMessageBean();
+		try {
+			result = LeaderboardImage.generateLeaderboardImage(leaderBoard);
+			result.setMoreRecords(!result.getLeftOverRecords().isEmpty());
+			result.setImageName("ldr_" + System.currentTimeMillis() + ".png");
+		}catch(IOException e) {
+			e.printStackTrace();
+			result.setMessage("Could not generate Leaderboard");
+		}
+		return result;
 	}
 }

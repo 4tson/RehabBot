@@ -8,6 +8,7 @@ public enum RolesEnum {
 	ANNOUNCEMENTS("announcements"),
 	SERVICES("services"),
 	SHOPPER("shopper"),
+	UNIQUES("uniques"),
 	;
 	private String name;
 

@@ -70,6 +70,10 @@ public enum RehabCommandsEnum {
 	LEVELUP("!levelup","Pay a bit of money to level up and unlock some perks by doing so.",ChannelsEnum.BOTCOMMANDS,true),
 	
 	CHECKLEVEL("!level","Get your current level.", ChannelsEnum.BOTCOMMANDS, true),
+	
+	ADDUNIQUES("!uniques","Adds the uniques role, this means you will get pinged when a unique or service is farmed by someone.",ChannelsEnum.BOTCOMMANDS, true),
+	
+	REMUNIQUES("!remuniques","Removes the uniques role, this means you wont get pinged when a unique or service is farmed by someone.",ChannelsEnum.BOTCOMMANDS, true),
 	;
 	
 	

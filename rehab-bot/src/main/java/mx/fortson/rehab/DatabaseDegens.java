@@ -150,7 +150,8 @@ public class DatabaseDegens {
 				record.put("FARMATT", rs.getInt(5));
 				record.put("NAME", rs.getString(6));
 				record.put("PEAK", rs.getLong(7));
-				
+				record.put("IRONMAN", rs.getBoolean(8));
+				record.put("LEVEL", rs.getInt(9));
 				result.add(record);
 			}
 			return result;

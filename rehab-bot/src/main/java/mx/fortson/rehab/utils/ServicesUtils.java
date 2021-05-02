@@ -162,12 +162,16 @@ public class ServicesUtils {
 		Long timeToRun = (long) (1000 * 60 * 60 * service.getLength());
 		Long expireTime = timeToRun + System.currentTimeMillis();
 		TextChannel createdChannel = RehabBot.getOrCreateChannel(service.getServiceId() + "-" + service.getName() + "-" + service.getOwnerName(),RehabBot.getOrCreateCategory(CategoriesEnum.MYSERVICES),0, new RolesEnum[] {}, new RolesEnum[] {});
+		
+		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
+		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole(RolesEnum.DEGEN)).deny(Permission.VIEW_CHANNEL).complete();
+		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole(RolesEnum.IRONMAN)).deny(Permission.VIEW_CHANNEL).complete();
+		createdChannel.putPermissionOverride(createdChannel.getGuild().getMemberById(service.getOwnerDiscordId())).setAllow(Permission.VIEW_CHANNEL).complete();
+		
 		StringBuilder greeting = new StringBuilder();
 		greeting.append(service.info())
 		.append(" You can check the status at any time using !status");
-		createdChannel.sendMessage(greeting.toString()).allowedMentions(new ArrayList<>()).complete();
-		createdChannel.putPermissionOverride(RehabBot.getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
-		createdChannel.putPermissionOverride(createdChannel.getGuild().getMemberById(service.getOwnerDiscordId())).setAllow(Permission.VIEW_CHANNEL).complete();
+		createdChannel.sendMessage(greeting.toString()).complete();
 		ServiceListener sl = new ServiceListener(createdChannel.getIdLong(), expireTime, service.getServiceId());
 		
 		Service serviceTask = new Service(service.getOwnerDiscordId(),
@@ -215,6 +219,7 @@ public class ServicesUtils {
 	public static void createNewService(BiddableServiceBean biddableService) {
 		TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
 		servicesChannel.getManager().setSlowmode(0).queue();
+		ServicesUtils.updateBiddableService(biddableService);
 		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getOrCreateRole(RolesEnum.SERVICES).getIdLong())).queue();
 		RehabBot.getApi().addEventListener(new ServiceStateMachine(biddableService));
 	}
@@ -256,6 +261,7 @@ public class ServicesUtils {
 				BiddableServiceBean newBiddableService = new BiddableServiceBean();
 				createNewService(newBiddableService);
 				DatabaseDegens.insertBiddableService(newBiddableService);
+				BIDDABLE_SERVICE_ID = DatabaseDegens.getBiddableServiceId();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

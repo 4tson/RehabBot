@@ -9,7 +9,21 @@ public class Degen implements Comparable<Degen>{
 	private int wins;
 	private int losses;
 	private Long peak;
+	private boolean ironman;
+	private int level;
 	
+	public boolean isIronman() {
+		return ironman;
+	}
+	public void setIronman(boolean ironman) {
+		this.ironman = ironman;
+	}
+	public int getLevel() {
+		return level;
+	}
+	public void setLevel(int level) {
+		this.level = level;
+	}
 	public Long getPeak() {
 		return peak;
 	}

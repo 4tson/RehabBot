@@ -44,7 +44,7 @@ public class Farms implements IChannel{
 						channel.sendMessage(paging.getMessage()).allowedMentions(paging.getPingList()).queue();
 						paging = MessageUtils.getFarmResult(farmCollBean,author.getIdLong());
 					}
-					channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
+					channel.sendMessage(paging.getMessage()).allowedMentions(paging.getPingList()).queue();
 				break;
 				default:
 					BotCommands.commonCommands(ChannelsEnum.FARMS,commandEnum, event);

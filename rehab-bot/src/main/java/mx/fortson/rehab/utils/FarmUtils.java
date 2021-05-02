@@ -27,6 +27,7 @@ public class FarmUtils {
 					if(farms > oldAttempts) {
 						farms = oldAttempts;
 					}
+					int degenLevel = DatabaseDegens.getDegenNextLevel(id).getLevel();
 					result.setAttempts(true);
 					int newAttempts = oldAttempts;
 					Long totalFarmed = 0L;
@@ -56,7 +57,7 @@ public class FarmUtils {
 							farmResultBean.setItemName(itemName);
 							break;
 						case SERVICE:
-							int serviceLevel = RandomUtils.randomInt(20);
+							int serviceLevel = RandomUtils.randomInt(degenLevel + 2);
 							String serviceName = RandomUtils.randomStringFromArray(farmResult.getType().getPossibleItems());
 							int maxFarms = serviceLevel > 2 ? 5 : serviceLevel > 4 ? 6 : serviceLevel > 8 ? 7 : serviceLevel > 12 ? 8 : serviceLevel > 18 ? 9 : 4;
 							int farmsFarmed = RandomUtils.randomInt(maxFarms);

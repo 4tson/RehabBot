@@ -67,6 +67,12 @@ public class RehabBot {
 			}
 			initProperties(args[0]);
 			
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+		        public void run() {
+		            announceDown();
+		        }
+		    });
+			
 			JDABuilder builder = JDABuilder.createDefault(getBotToken())
 					.setChunkingFilter(ChunkingFilter.ALL) // enable member chunking for all guilds
 			          .setMemberCachePolicy(MemberCachePolicy.ALL) // ignored if chunking enabled
@@ -91,6 +97,11 @@ public class RehabBot {
 		
 	}
 	
+	protected static void announceDown() {
+		getOrCreateChannel(ChannelsEnum.ANNOUNCEMENTS).sendMessage("<@&" + getOrCreateRole(RolesEnum.ANNOUNCEMENTS).getIdLong() + "> the bot is now down.").complete();
+		getApi().shutdownNow();
+	}
+
 	private static void registerPredefinedServices(Long botDiscId) {
 		int degenId;
 		try {
@@ -202,6 +213,8 @@ public class RehabBot {
 				TextChannel createdChannel = myServicesCat.createTextChannel(runningService.getServiceId() + "-" + runningService.getName() + "-" + runningService.getOwnerName()).complete();
 				 
 				createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.EVERYONE)).deny(Permission.VIEW_CHANNEL).complete();
+				createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.DEGEN)).deny(Permission.VIEW_CHANNEL).complete();
+				createdChannel.putPermissionOverride(getOrCreateRole(RolesEnum.IRONMAN)).deny(Permission.VIEW_CHANNEL).complete();
 				createdChannel.putPermissionOverride(member).setAllow(Permission.VIEW_CHANNEL).complete();
 				
 				StringBuilder greeting = new StringBuilder();
@@ -321,7 +334,6 @@ public class RehabBot {
 						}
 					}
 				}else {
-					System.out.println("inserting new degen");
 					if(DatabaseDegens.insertNewDegen(id,name,iron)>=1) {
 						result =  RegisterResultEnum.SUCCESS;
 					}
