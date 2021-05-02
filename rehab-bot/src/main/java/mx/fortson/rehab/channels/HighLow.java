@@ -36,7 +36,6 @@ public final class HighLow implements IChannel{
 			@Override
 			public void run() {
 				RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateNewNumberMessage()).allowedMentions(new ArrayList<>()).queue();
-				RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).getManager().setTopic("Current number is " + number).queue();
 				highLowTask.cancel();
 				timer.purge();
 				highLowTask = null;
@@ -57,7 +56,6 @@ public final class HighLow implements IChannel{
 						equal = number==oldNumber;
 					}
 					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateGameEndMessage(oldNumber)).allowedMentions(new ArrayList<>()).queue();
-					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).getManager().setTopic("Current number is " + number).queue();
 					List<Long> losers = new ArrayList<>();
 					for(Entry<Long,PlayerWinsBean> entry : playersWins.entrySet()) {
 						if(playersBets.containsKey(entry.getKey())) {

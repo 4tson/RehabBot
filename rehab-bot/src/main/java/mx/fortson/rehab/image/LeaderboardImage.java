@@ -84,51 +84,52 @@ public class LeaderboardImage {
 		graphic.dispose();
 		
 		for(Degen degen : leaderBoard) {
-			x = 25;
-			y = y+graphic.getFontMetrics().getHeight();
-			if(y>=maxY) {
-				break;
-			}
-			
-			graphic = combined.getGraphics();
-			if(degen.isIronman()) {
-				BufferedImage ironIndicator;
-				try(InputStream ironIndIS = InventoryImage.class.getResourceAsStream(ImagesEnum.IRON_INDICATOR.getFileName())){
-					ironIndicator = ImageIO.read(ironIndIS);
+			if(!degen.getName().equalsIgnoreCase("Shop Owner")) {
+				x = 25;
+				y = y+graphic.getFontMetrics().getHeight();
+				if(y>=maxY) {
+					break;
 				}
-				graphic.drawImage(ironIndicator,10,y-ironIndicator.getHeight(), null);
+				
+				graphic = combined.getGraphics();
+				if(degen.isIronman()) {
+					BufferedImage ironIndicator;
+					try(InputStream ironIndIS = InventoryImage.class.getResourceAsStream(ImagesEnum.IRON_INDICATOR.getFileName())){
+						ironIndicator = ImageIO.read(ironIndIS);
+					}
+					graphic.drawImage(ironIndicator,10,y-ironIndicator.getHeight(), null);
+				}
+				
+				graphic.setFont(graphic.getFont().deriveFont(13f));
+				graphic.setColor(Color.BLACK);
+				graphic.drawString(degen.getName(), x, y);
+				
+				x = x + nameWidth;
+				
+				graphic.drawString(FormattingUtils.format(degen.getBank(),false), x, y);
+				
+				x = x + amountWidth;
+				
+				graphic.drawString(FormattingUtils.format(degen.getPeak(),false), x, y);
+				
+				x = x + amountWidth;
+				
+				graphic.drawString(String.valueOf(degen.getFarmAttempts()), x, y);
+				
+				x = x + farmWidth;
+				
+				graphic.drawString(String.valueOf(degen.getTimesFarmed()),x,y);
+				
+				x = x + timesFarmedWidth;
+				
+				graphic.drawString(degen.getWins() + "/" + degen.getLosses(), x, y);
+				
+				x = x + winLossWidth;
+				
+				graphic.drawString(String.valueOf(degen.getLevel()),x,y);
+				
+				graphic.dispose();
 			}
-			
-			graphic.setFont(graphic.getFont().deriveFont(13f));
-			graphic.setColor(Color.BLACK);
-			graphic.drawString(degen.getName(), x, y);
-			
-			x = x + nameWidth;
-			
-			graphic.drawString(FormattingUtils.format(degen.getBank(),false), x, y);
-			
-			x = x + amountWidth;
-			
-			graphic.drawString(FormattingUtils.format(degen.getPeak(),false), x, y);
-			
-			x = x + amountWidth;
-			
-			graphic.drawString(String.valueOf(degen.getFarmAttempts()), x, y);
-			
-			x = x + farmWidth;
-			
-			graphic.drawString(String.valueOf(degen.getTimesFarmed()),x,y);
-			
-			x = x + timesFarmedWidth;
-			
-			graphic.drawString(degen.getWins() + "/" + degen.getLosses(), x, y);
-			
-			x = x + winLossWidth;
-			
-			graphic.drawString(String.valueOf(degen.getLevel()),x,y);
-			
-			graphic.dispose();
-			
 			leftover.remove(degen);
 		}
 		

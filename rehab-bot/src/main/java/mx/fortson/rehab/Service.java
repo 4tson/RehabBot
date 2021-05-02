@@ -50,7 +50,7 @@ public class Service extends TimerTask {
 		if(!delete) {
 			RehabBot.getApi().getGuildChannelById(channelId).getManager().setSlowmode(0).complete();
 			ServicesUtils.updateBiddableServiceActive();
-			ServicesUtils.createNewService(new BiddableServiceBean());
+			ServicesUtils.createNewService(new BiddableServiceBean(ownerID));
 		}
 		if(delete) {
 			ServicesUtils.deleteService(serviceID);

@@ -23,10 +23,12 @@ public class ServiceStateMachine extends ListenerAdapter{
 	private final BiddableServiceBean biddableService;
 	
 	private TimerTask bidTask = null;
+	
 	private final Timer timer = new Timer("BidTimer");
 	
 	public ServiceStateMachine(BiddableServiceBean biddableService) {
 		this.biddableService = biddableService;
+		System.out.println(biddableService.getPreviousOwner());
 	}
 
 	protected void removeListener() {
@@ -87,6 +89,8 @@ public class ServiceStateMachine extends ListenerAdapter{
 		        if(contentSplit[0].equalsIgnoreCase("!bid")) {
 		        	if(event.getAuthor().getIdLong()==biddableService.getWinnerID()) {
 		        		channel.sendMessage("You already have the winning bid so far.").queue();
+		        	}else if(event.getAuthor().getIdLong()==biddableService.getPreviousOwner()){
+		        		channel.sendMessage("<@" + biddableService.getPreviousOwner() + "> You can't own back to back biddable services in the same day.").queue();
 		        	}else {
 			        	String amountS = contentSplit[1];
 			        	if(FormattingUtils.isValidAmount(amountS)) {

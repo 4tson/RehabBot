@@ -229,7 +229,10 @@ public class ServicesUtils {
 			ServiceBean biddableService = DatabaseDegens.selectBiddableService();
 			BIDDABLE_SERVICE_ID = DatabaseDegens.getBiddableServiceId();
 			if(biddableService!=null) {
-				if(biddableService.isActive()) {
+				if(biddableService.getOwnerDiscordId().equals(RehabBot.getBotId())|| !biddableService.isActive()) {
+					//The biddable service was not active or belonged to the bot, so we create it to be bid on
+					createNewService(new BiddableServiceBean(biddableService,biddableService.getOwnerDiscordId()));
+				}else if(biddableService.isActive()) {
 					Long timeToRun = (long) (1000 * 60 * 60 * biddableService.getLength());
 					Long expireTime = timeToRun + System.currentTimeMillis();
 					TextChannel servicesChannel = RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE);
@@ -252,13 +255,10 @@ public class ServicesUtils {
 					KillServiceTask kst = new KillServiceTask(serviceTask);
 					kstTimer.schedule(kst, new Date(expireTime));
 					servicesChannel.sendMessage(biddableService.info()).allowedMentions(new ArrayList<>()).queue();
-				}else {
-					//The biddable service was not active so we just create a new one same as always
-					createNewService(new BiddableServiceBean(biddableService));
 				}
 			}else {
 				//The biddable service did not exist so we just create a new one and insert it into the database
-				BiddableServiceBean newBiddableService = new BiddableServiceBean();
+				BiddableServiceBean newBiddableService = new BiddableServiceBean(RehabBot.getBotId());
 				createNewService(newBiddableService);
 				DatabaseDegens.insertBiddableService(newBiddableService);
 				BIDDABLE_SERVICE_ID = DatabaseDegens.getBiddableServiceId();
