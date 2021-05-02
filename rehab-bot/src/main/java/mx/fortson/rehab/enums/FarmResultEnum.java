@@ -5,10 +5,13 @@ public enum FarmResultEnum {
 	RANDO_PITY(new String[]{
 			"A random player took pity in you, and gave you `{amount}`.",
 			"You found `{amount}` on the ground, so lucky!",
-			"Jagex bug resulted in you getting `{amount}` in your bank."
+			"Jagex bug resulted in you getting `{amount}` in your bank.",
+			"You spent a couple hours pvming for `{amount}`.",
+			"You did a full year of runecrafting for `{amount}`.",
+			"You bought a couple of bonds for `{amount}`, no shame in it."
 			}, 
 			new Long[]{1000000L,2500000L},
-			0.58,
+			0.585,
 			FarmTypeEnum.CASH),
 	CLUE_GOOD(new String[]{
 			"You completed a Hard clue for `{amount}`",
@@ -29,14 +32,14 @@ public enum FarmResultEnum {
 			"Rehabbers pool a cheeky `{amount}` gift chuck for you.",
 			"We feel bad for you, the bot gives you a `{amount}` gift chuck."
 			}, 
-			new Long[]{15000000L,500000000L},
-			0.1,
+			new Long[]{15000000L,50000000L},
+			0.05,
 			FarmTypeEnum.CASH),
 	COX_DROP(new String[]{
 			"You decide to go back to CoX, as if thats going to help. Wait... is that a purple? Your loot is worth `{amount}`"
 			}, 
 			new Long[]{7699443L,1020160391L},
-			0.01,
+			0.005,
 			FarmTypeEnum.CASH),
 	TOB_DROP(new String[]{
 			"Maybe ToB is going to be good today. 416, LFR, sigh... What's the difference? Your loot is worth `{amount}`"
@@ -75,7 +78,7 @@ public enum FarmResultEnum {
 			"The possibilities are endless."
 			}, 
 			new Long[]{73L,73L},
-			0.0007,
+			0.0009,
 			FarmTypeEnum.SERVICE),
 	;
 	
