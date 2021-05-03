@@ -49,16 +49,20 @@ public class LeaderboardImage {
 		
 		int maxY = combined.getHeight() - 65 - 35 / graphic.getFontMetrics().getHeight();
 		
-		int nameWidth = 90;
-		int amountWidth = graphic.getFontMetrics().stringWidth("Bank") + 10;
-		int farmWidth = graphic.getFontMetrics().stringWidth("99999") + 10;
-		int timesFarmedWidth = graphic.getFontMetrics().stringWidth("Farmed") + 10;
-		int winLossWidth = graphic.getFontMetrics().stringWidth("999/999") + 10;
+		int nameWidth = 100;
+		int amountWidth = graphic.getFontMetrics().stringWidth("Bank") + 15;
+		int farmWidth = graphic.getFontMetrics().stringWidth("99999") + 15;
+		int timesFarmedWidth = graphic.getFontMetrics().stringWidth("Farmed") + 15;
+		int lvlWidth = graphic.getFontMetrics().stringWidth("100") + 15;
 		
 		
 		graphic.drawString("Name", x, y);
 		
 		x = x + nameWidth;
+		
+		graphic.drawString("Lv.",x,y);
+		
+		x = x + lvlWidth;
 		
 		graphic.drawString("Bank", x, y);
 		
@@ -77,9 +81,6 @@ public class LeaderboardImage {
 		graphic.setFont(graphic.getFont().deriveFont(13f));
 		graphic.drawString("W/L", x, y);
 		
-		x = x + winLossWidth;
-		
-		graphic.drawString("Lv.",x,y);
 		
 		graphic.dispose();
 		
@@ -106,6 +107,10 @@ public class LeaderboardImage {
 				
 				x = x + nameWidth;
 				
+				graphic.drawString(String.valueOf(degen.getLevel()),x,y);
+				
+				x = x + lvlWidth;
+				
 				graphic.drawString(FormattingUtils.format(degen.getBank(),false), x, y);
 				
 				x = x + amountWidth;
@@ -123,10 +128,6 @@ public class LeaderboardImage {
 				x = x + timesFarmedWidth;
 				
 				graphic.drawString(degen.getWins() + "/" + degen.getLosses(), x, y);
-				
-				x = x + winLossWidth;
-				
-				graphic.drawString(String.valueOf(degen.getLevel()),x,y);
 				
 				graphic.dispose();
 			}

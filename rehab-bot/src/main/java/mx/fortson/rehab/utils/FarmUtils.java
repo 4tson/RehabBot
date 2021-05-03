@@ -59,10 +59,13 @@ public class FarmUtils {
 						case SERVICE:
 							int serviceLevel = RandomUtils.randomInt(degenLevel + 2);
 							String serviceName = RandomUtils.randomStringFromArray(farmResult.getType().getPossibleItems());
-							int maxFarms = serviceLevel > 2 ? 5 : serviceLevel > 4 ? 6 : serviceLevel > 8 ? 7 : serviceLevel > 12 ? 8 : serviceLevel > 18 ? 9 : 4;
+							
+							int maxFarms = serviceLevel > 18 ? 9 : serviceLevel > 12 ? 8 : serviceLevel > 8 ? 7 : serviceLevel > 4 ? 6 : serviceLevel > 2 ? 5 : 4;
 							int farmsFarmed = RandomUtils.randomInt(maxFarms);
 							double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(1.0, maxFarms * .5)));
-							int interval = RandomUtils.randomInt(6);
+							int intervalLowerBound = serviceLevel > 30 ? 1 : serviceLevel > 20 ? 2 : serviceLevel > 10 ? 3 : 4;  
+							int interval = RandomUtils.randomInt(6 - intervalLowerBound) + intervalLowerBound;
+							
 							farmResultBean.setName(serviceName);
 							farmResultBean.setFarms(farmsFarmed);
 							farmResultBean.setRateHours(rateHour);

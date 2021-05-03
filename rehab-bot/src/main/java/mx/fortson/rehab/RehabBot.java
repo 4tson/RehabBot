@@ -389,10 +389,16 @@ public class RehabBot {
 				if(nextLevel.isFreeService()) {
 					int serviceLevel = nextLevel.getLevel() + 1;
 					String serviceName = RandomUtils.randomStringFromArray(RehabBotConstants.SERVICE_NAMES);
-					int maxFarms = serviceLevel > 2 ? 5 : serviceLevel > 4 ? 6 : serviceLevel > 8 ? 7 : serviceLevel > 12 ? 8 : serviceLevel > 18 ? 9 : 4;
+					
+					int maxFarms = serviceLevel > 18 ? 8 : serviceLevel > 12 ? 7 : serviceLevel > 8 ? 6 : serviceLevel > 4 ? 5 : 4;
+					
 					int farmsFarmed = RandomUtils.randomInt(Math.toIntExact(Math.round(maxFarms*1.5)));
+					
 					double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(3.0, maxFarms)));
-					int interval = RandomUtils.randomInt(6);
+					
+					int intervalLowerBound = serviceLevel > 15 ? 1 : 2;  
+					
+					int interval = RandomUtils.randomInt(6 - intervalLowerBound) + intervalLowerBound;
 					if(interval>farmsFarmed) {
 						farmsFarmed = interval;
 					}
