@@ -102,11 +102,21 @@ public class FarmUtils {
 		}
 	}
 	
+	public static double getMultiplier(int degenId) {
+		try {
+			return DatabaseDegens.getFarmMultiplier(degenId);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 1;
+	}
+	
 	public static int addFarmsToUser(long idLong) {
 		try {
+			int degenId = DatabaseDegens.getDegenId(idLong);
 			int freeFarms = RandomUtils.randomFreeFarm();
-			
-			DatabaseDegens.addFarmAtt(freeFarms, DatabaseDegens.getDegenId(idLong));
+			double multiplier = getMultiplier(degenId);
+			DatabaseDegens.addFarmAtt(Math.toIntExact(Math.round(freeFarms * multiplier)), degenId);
 			return freeFarms;
 		}catch(SQLException e) {
 			e.printStackTrace();
@@ -123,6 +133,15 @@ public class FarmUtils {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	public static double getMultiplier(Long ownerID) {
+		try {
+			return getMultiplier(DatabaseDegens.getDegenId(ownerID));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 1;
 	}
 	
 }

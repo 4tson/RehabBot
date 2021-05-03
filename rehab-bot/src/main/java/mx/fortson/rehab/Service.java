@@ -36,7 +36,8 @@ public class Service extends TimerTask {
 	@Override
 	public void run() {
 		//Announce getting farm
-		FarmUtils.addSetFarmsToUser(ownerID, farms);
+		double multiplier = FarmUtils.getMultiplier(ownerID);
+		FarmUtils.addSetFarmsToUser(ownerID, Math.toIntExact(Math.round(farms * multiplier)));
 		RehabBot.getApi().getTextChannelById(channelId).sendMessage(MessageUtils.getServiceResult(ownerID, serviceName, farms)).allowedMentions(new ArrayList<>()).queue();
 		Long current = System.currentTimeMillis();
 		Double timeLeft =  (expiry.doubleValue() - current.doubleValue()) / 1000 / 60 / 60;

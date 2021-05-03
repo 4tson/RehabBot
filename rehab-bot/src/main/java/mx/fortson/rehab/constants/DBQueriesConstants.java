@@ -119,4 +119,8 @@ public class DBQueriesConstants {
 	public static final String RAISE_LEVEL = "UPDATE DEGENS SET LEVEL = LEVEL + 1 WHERE DISCORDID = ?";
 	
 	public static final String SELECT_LEVEL = "SELECT COST, SERVICEREWARD, DEGENS.LEVEL FROM LEVELS, DEGENS WHERE LEVELS.LEVEL = DEGENS.LEVEL AND DEGENS.DISCORDID = ?";
+	
+	public static final String SELECT_MULTIPLIER = "select ifnull(sum(d.multiplier),0) + \r\n"
+			+ "(select farmmultiplier from levels, degens where levels.level = (select level from degens where degenid = ?) and degens.degenid = ?) \r\n"
+			+ "from (select t.multiplier from types t, items i, shop s where s.ITEMNAME = i.NAME and i.type = t.TYPEID and s.DEGENID = ? group by i.name) d";
 }

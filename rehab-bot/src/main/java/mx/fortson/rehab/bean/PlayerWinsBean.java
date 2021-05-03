@@ -49,6 +49,6 @@ public class PlayerWinsBean {
 	}
 
 	public int cashOut() {
-		return this.currentFarms + 10;
+		return Math.toIntExact(Math.round(this.currentFarms * this.rate)) + 10;
 	}	
 }

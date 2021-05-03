@@ -797,4 +797,18 @@ public class DatabaseDegens {
 		}
 		return level;
 	}
+
+	public static double getFarmMultiplier(int degenId) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_MULTIPLIER)){
+			stmt.setInt(1, degenId);
+			stmt.setInt(2, degenId);
+			stmt.setInt(3, degenId);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return rs.getDouble(1);
+			}
+		}
+		return 1.00;
+	}
 }

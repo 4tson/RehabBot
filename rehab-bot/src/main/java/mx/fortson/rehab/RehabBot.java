@@ -384,6 +384,7 @@ public class RehabBot {
 		try {
 			Long funds = DatabaseDegens.getFundsById(idLong);
 			if(funds>=nextLevel.getCost()) {
+				DatabaseDegens.updateFundsSum(-nextLevel.getCost(), DatabaseDegens.getDegenId(idLong));
 				DatabaseDegens.updateLevel(idLong);
 				if(nextLevel.isFreeService()) {
 					int serviceLevel = nextLevel.getLevel() + 1;

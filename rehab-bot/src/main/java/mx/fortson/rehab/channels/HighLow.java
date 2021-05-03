@@ -165,7 +165,8 @@ public final class HighLow implements IChannel{
 		}
 		if(playersWins.containsKey(idLong)) {
 			int farmAmount = playersWins.get(idLong).cashOut();
-			FarmUtils.addSetFarmsToUser(idLong, farmAmount);
+			double multiplier = FarmUtils.getMultiplier(idLong);
+			FarmUtils.addSetFarmsToUser(idLong, Math.toIntExact(Math.round((farmAmount - 10) * multiplier)) + 10);
 			playersWins.remove(idLong);
 			HighLowUtils.saveState(playersWins);
 			return "You have successfully cashed out `" + farmAmount + "` farms. See you soon.";
