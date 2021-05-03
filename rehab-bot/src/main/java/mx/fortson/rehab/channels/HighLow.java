@@ -59,7 +59,6 @@ public final class HighLow implements IChannel{
 						number = RandomUtils.randomInt(13);
 						equal = number==oldNumber;
 					}
-					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateGameEndMessage(oldNumber)).allowedMentions(new ArrayList<>()).queue();
 					List<Long> losers = new ArrayList<>();
 					for(Entry<Long,PlayerWinsBean> entry : playersWins.entrySet()) {
 						if(playersBets.containsKey(entry.getKey())) {
@@ -81,6 +80,7 @@ public final class HighLow implements IChannel{
 					timer.purge();
 					highLowTask = null;
 					HighLowUtils.saveState(playersWins);
+					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateGameEndMessage(oldNumber)).allowedMentions(new ArrayList<>()).queue();
 					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateNewNumberMessage()).allowedMentions(new ArrayList<>()).queue();
 				}
 			};
@@ -108,8 +108,17 @@ public final class HighLow implements IChannel{
 		.append("`, the new number is... `")
 		.append(number)
 		.append("`! `")
-		.append(number>oldNumber ? "Higher" : "Lower")
-		.append("` wins. Congratulations to the winners. Better luck next time to the losers.");
+		.append(number>oldNumber ? "High" : "Low")
+		.append("` wins.");
+		for(Entry<Long, PlayerWinsBean> playerWins : playersWins.entrySet()) {
+			sb.append("\n<@")
+			.append(playerWins.getKey())
+			.append("> You have `")
+			.append(playerWins.getValue().cashOut())
+			.append("` farm(s) you can cash out and your rate is `")
+			.append(playerWins.getValue().getRate())
+			.append("`.");
+		}
 		return sb.toString();
 	}
 
