@@ -5,6 +5,13 @@ public class LevelBean {
 	private Long cost;
 	private boolean freeService;
 	private int level;
+	private double hiddenMultiplier;
+	public double getHiddenMultiplier() {
+		return hiddenMultiplier;
+	}
+	public void setHiddenMultiplier(double hiddenMultiplier) {
+		this.hiddenMultiplier = hiddenMultiplier;
+	}
 	public int getLevel() {
 		return level;
 	}

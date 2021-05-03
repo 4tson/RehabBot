@@ -561,6 +561,10 @@ public class MessageUtils {
 		.append(idLong)
 		.append("> You are currently level `")
 		.append(level.getLevel())
+		.append("`, leveling up will cost you `")
+		.append(FormattingUtils.format(level.getCost(),true))
+		.append("`. Your hidden level + items farm multiplier is currently `")
+		.append(level.getHiddenMultiplier())
 		.append("`");
 		return sb.toString();
 	}

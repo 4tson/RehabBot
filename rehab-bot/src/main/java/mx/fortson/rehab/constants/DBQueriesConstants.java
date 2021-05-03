@@ -122,5 +122,5 @@ public class DBQueriesConstants {
 	
 	public static final String SELECT_MULTIPLIER = "select ifnull(sum(d.multiplier),0) + \r\n"
 			+ "(select farmmultiplier from levels, degens where levels.level = (select level from degens where degenid = ?) and degens.degenid = ?) \r\n"
-			+ "from (select t.multiplier from types t, items i, shop s where s.ITEMNAME = i.NAME and i.type = t.TYPEID and s.DEGENID = ? group by i.name) d";
+			+ "from (select t.multiplier from types t, items i, shop s where s.ITEMNAME = i.NAME and i.type = t.TYPEID and s.DEGENID = ? and S.forsale = false group by i.name) d";
 }

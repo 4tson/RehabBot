@@ -9,7 +9,9 @@ public class LevelUtils {
 
 	public static LevelBean getNextLevel(long discId) {
 		try {
-			return DatabaseDegens.getDegenNextLevel(discId);
+			LevelBean level = DatabaseDegens.getDegenNextLevel(discId);
+			level.setHiddenMultiplier(DatabaseDegens.getFarmMultiplier(DatabaseDegens.getDegenId(discId)));
+			return level;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
