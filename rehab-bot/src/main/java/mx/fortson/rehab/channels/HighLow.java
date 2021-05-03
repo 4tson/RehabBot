@@ -60,12 +60,14 @@ public final class HighLow implements IChannel{
 					for(Entry<Long,PlayerWinsBean> entry : playersWins.entrySet()) {
 						if(playersBets.containsKey(entry.getKey())) {
 							if(playersBets.get(entry.getKey()).equals(number>oldNumber)){
+								entry.getValue().raiseRate();
 								entry.getValue().updateFarms();
 							}else {
 								losers.add(entry.getKey());
 							}
 						}else {
 							entry.getValue().lowerRate();
+							entry.getValue().updateFarms();
 						}
 					}
 					playersWins.keySet().removeAll(losers);
