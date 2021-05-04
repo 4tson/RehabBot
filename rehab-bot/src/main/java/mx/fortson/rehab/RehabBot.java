@@ -67,16 +67,13 @@ public class RehabBot {
 			}
 			initProperties(args[0]);
 			
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-		        public void run() {
-		            announceDown();
-		        }
-		    });
+			Runtime.getRuntime().addShutdownHook(new Thread(RehabBot::announceDown));
 			
 			JDABuilder builder = JDABuilder.createDefault(getBotToken())
 					.setChunkingFilter(ChunkingFilter.ALL) // enable member chunking for all guilds
 			          .setMemberCachePolicy(MemberCachePolicy.ALL) // ignored if chunking enabled
-			          .enableIntents(GatewayIntent.GUILD_MEMBERS);
+			          .enableIntents(GatewayIntent.GUILD_MEMBERS)
+			          .setEnableShutdownHook(false);
 			api = builder.build()
 			.awaitReady();
 			Long botDiscId = getBotId();
