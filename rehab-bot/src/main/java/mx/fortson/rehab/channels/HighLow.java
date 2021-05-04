@@ -70,7 +70,6 @@ public final class HighLow implements IChannel{
 							}
 						}else {
 							entry.getValue().lowerRate();
-							entry.getValue().updateFarms();
 						}
 					}
 					playersWins.keySet().removeAll(losers);
