@@ -3,10 +3,15 @@ package mx.fortson.rehab.channels;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
-import mx.fortson.rehab.enums.ShopCommandsEnum;
+import mx.fortson.rehab.enums.ChannelsEnum;
+import mx.fortson.rehab.enums.RehabCommandsEnum;
+import mx.fortson.rehab.enums.RolesEnum;
+import mx.fortson.rehab.utils.FormattingUtils;
 import mx.fortson.rehab.utils.MessageUtils;
 import mx.fortson.rehab.utils.ShopUtils;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -18,63 +23,83 @@ public class Shop implements IChannel{
 
 	@SuppressWarnings("unchecked")
 	public void processMessage(GuildMessageReceivedEvent event) {
-		Role shopperRole = RehabBot.getOrCreateRole("shopper");
-		String messageContent = event.getMessage().getContentDisplay();
+		Role shopperRole = RehabBot.getOrCreateRole(RolesEnum.SHOPPER);
+		String messageContent = event.getMessage().getContentRaw();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();
 			User author = event.getAuthor();
-			switch(ShopCommandsEnum.fromCommand(messageContent)) {
-			case BUY:
-				channel.sendMessage(MessageUtils.getTransactionResult(ShopUtils.transaction(messageContent.split(" ")[1],author.getIdLong(),false))).allowedMentions(new ArrayList<>()).queue();
-				break;
-			case BUY_SERVICE:
-				channel.sendMessage(MessageUtils.getTransactionResult(ShopUtils.transaction(messageContent.split(" ")[1],author.getIdLong(),true))).allowedMentions(new ArrayList<>()).queue();
-				break;
-			case COMMANDS:
-				channel.sendMessage(MessageUtils.getAvailableShopCommands()).queue();
-				break;
-			case NON_EXISTANT:
-				break;
-			case SELL:
-				if(messageContent.split(" ").length==2) {
-					channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(messageContent.split(" ")[1],author.getIdLong()),"",shopperRole.getIdLong())).queue();
-				}
-				if(messageContent.split(" ").length==3) {
-					channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(messageContent.split(" ")[1],messageContent.split(" ")[2],author.getIdLong(),false),"",shopperRole.getIdLong())).queue();
-				}
-				break;
-			case SELL_SERVICE:
-				if(messageContent.split(" ").length==3) {
-					channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(messageContent.split(" ")[1],messageContent.split(" ")[2],author.getIdLong(),true),"",shopperRole.getIdLong())).queue();
-				}
-				break;
-			case SHOP:
-				PagedMessageBean paging = MessageUtils.getShopDetails(ShopUtils.getShopContents());
-				while(paging.isMoreRecords()) {
+			RehabCommandsEnum commandEnum = RehabCommandsEnum.fromCommand(messageContent, ChannelsEnum.SHOP);
+			String[] contentSplit = messageContent.split(" ");
+			if(null!=commandEnum) {
+				switch(commandEnum) {
+				case BUYSHOP:
+					if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
+						channel.sendMessage(MessageUtils.getTransactionResult(ShopUtils.transaction(messageContent.split(" ")[1],author.getIdLong(),false))).allowedMentions(new ArrayList<>()).queue();
+					}else {
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
+					}
+					break;
+				case SELLSHOP:
+					if(contentSplit.length>1) {
+						if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
+							channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],author.getIdLong()),"",shopperRole.getIdLong())).queue();
+						}else if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && FormattingUtils.isValidAmount(contentSplit[2])) {
+							channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],contentSplit[2],author.getIdLong(),false),"",shopperRole.getIdLong())).queue();
+						}else {
+							channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
+						}
+					}else{
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
+					}
+					break;
+				case BUY_SERVICE:
+					if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
+						channel.sendMessage(MessageUtils.getTransactionResult(ShopUtils.transaction(messageContent.split(" ")[1],author.getIdLong(),true))).allowedMentions(new ArrayList<>()).queue();
+					}else {
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
+					}
+					break;
+				case SELLSERVICE:
+					if(contentSplit.length==3 && StringUtils.isNumeric(contentSplit[1]) && FormattingUtils.isValidAmount(contentSplit[2])) {
+						channel.sendMessage(MessageUtils.announceSale(ShopUtils.putForSale(contentSplit[1],contentSplit[2],author.getIdLong(),true),"",shopperRole.getIdLong())).queue();
+					}else {
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
+					}
+					break;
+				case SHOPAVAIL:
+					PagedMessageBean paging = MessageUtils.getShopDetails(ShopUtils.getShopContents());
+					while(paging.isMoreRecords()) {
+						channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
+						paging = MessageUtils.getShopDetails((List<ItemBean>)(Object)paging.getLeftOverRecords());
+					}
 					channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
-					paging = MessageUtils.getShopDetails((List<ItemBean>)(Object)paging.getLeftOverRecords());
+					break;
+				case CANCEL_SALE:
+					if(contentSplit.length==2 && StringUtils.isNumeric(contentSplit[1])) {
+						channel.sendMessage(MessageUtils.announceSaleCancel(ShopUtils.cancelSale(contentSplit[1],author.getIdLong()),author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
+					}else {
+						channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
+					}
+					break;
+				case ADDROLESHOP:
+					event.getGuild().addRoleToMember(event.getMember(), shopperRole).queue();
+					channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),shopperRole.getName(),"added")).allowedMentions(new ArrayList<>()).queue();
+					break;
+				case REMROLESHOP:
+					event.getGuild().removeRoleFromMember(event.getMember(), shopperRole).queue();
+					channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),shopperRole.getName(),"removed")).allowedMentions(new ArrayList<>()).queue();
+					break;
+				default:
+					BotCommands.commonCommands(ChannelsEnum.SHOP,commandEnum, event);
+					break;	
 				}
-				channel.sendMessage(paging.getMessage()).allowedMentions(new ArrayList<>()).queue();
-				break;
-			case CANCEL_SALE:
-				if(messageContent.split(" ").length>1) {
-					channel.sendMessage(MessageUtils.announceSaleCancel(ShopUtils.cancelSale(messageContent.split(" ")[1],author.getIdLong()),author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
-				}
-			case ADD_ROLE:
-				event.getGuild().addRoleToMember(event.getMember(), shopperRole).queue();
-				channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),shopperRole.getName(),"added")).allowedMentions(new ArrayList<>()).queue();
-				break;
-			case REM_ROLE:
-				event.getGuild().removeRoleFromMember(event.getMember(), shopperRole).queue();
-				channel.sendMessage(MessageUtils.announceRoleChange(author.getIdLong(),shopperRole.getName(),"removed")).allowedMentions(new ArrayList<>()).queue();
-				break;
-			default:
+			}else {
 				event.getMessage().delete().queue();
-				break;
+				channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 			}
 		}else {
 			event.getMessage().delete().queue();
 		}
+			
 	}
-
 }

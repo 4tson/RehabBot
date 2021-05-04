@@ -9,6 +9,7 @@ public class ServiceBean extends ItemBean{
 	private int interval;
 	private boolean active;
 	
+	
 	public String info() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("`")
@@ -24,6 +25,22 @@ public class ServiceBean extends ItemBean{
 		.append(">.");
 		return sb.toString();
 	}
+
+	public ServiceBean() {
+		super();
+	}
+
+
+	public ServiceBean(int serviceId, int farms, double length, String name, int interval, boolean active) {
+		this.serviceId = serviceId;
+		this.farms = farms;
+		this.length = Double.parseDouble(String.format("%.1f",length));
+		this.name = name;
+		this.interval = interval;
+		this.active = active;
+	}
+
+
 	@Override
 	public boolean isForSale() {
 		return super.isForSale() && !this.active;
@@ -52,7 +69,7 @@ public class ServiceBean extends ItemBean{
 		return length;
 	}
 	public void setLength(double length) {
-		this.length = length;
+		this.length = Double.parseDouble(String.format("%.1f",length));
 	}
 	public String getName() {
 		return name;

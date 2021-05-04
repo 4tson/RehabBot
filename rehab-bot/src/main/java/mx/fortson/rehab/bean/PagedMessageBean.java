@@ -2,18 +2,10 @@ package mx.fortson.rehab.bean;
 
 import java.util.List;
 
-public class PagedMessageBean {
+public class PagedMessageBean extends MessageUtilsResultBean{
 
 	private boolean moreRecords;
 	private List<?> leftOverRecords;
-	private String message;
-	
-	public String getMessage() {
-		return message;
-	}
-	public void setMessage(String message) {
-		this.message = message;
-	}
 	public boolean isMoreRecords() {
 		return moreRecords;
 	}

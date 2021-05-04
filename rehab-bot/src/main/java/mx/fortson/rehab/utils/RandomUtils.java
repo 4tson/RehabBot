@@ -14,6 +14,7 @@ public class RandomUtils {
 	
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
+	
 	public static int randomInt(int size) {
 		return RANDOM.nextInt(size) + 1;
 	}
@@ -37,6 +38,11 @@ public class RandomUtils {
 	public static String randomStringFromArray(String[] possibleStrings) {
 		int x = RANDOM.nextInt(possibleStrings.length);
         return possibleStrings[x];
+	}
+	
+	public static String randomStringFromList(List<String> possibleStrings) {
+		int x = RANDOM.nextInt(possibleStrings.size());
+		return possibleStrings.get(x);
 	}
 
 	public static int randomFreeFarm() {

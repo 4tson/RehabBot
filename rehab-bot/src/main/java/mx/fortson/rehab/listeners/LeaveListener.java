@@ -13,7 +13,7 @@ public class LeaveListener extends ListenerAdapter{
 		try {
 			int degenId = DatabaseDegens.getDegenId(event.getUser().getIdLong());
 			if(degenId!=0) {
-				DatabaseDegens.deleteDegen(degenId);
+				DatabaseDegens.deactivateDegen(degenId);
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();

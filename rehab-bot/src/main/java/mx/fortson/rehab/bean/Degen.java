@@ -1,6 +1,6 @@
 package mx.fortson.rehab.bean;
 
-public class Degen implements Comparable<Degen>{
+public class Degen{
 
 	private Long bank;
 	private String name;
@@ -9,7 +9,21 @@ public class Degen implements Comparable<Degen>{
 	private int wins;
 	private int losses;
 	private Long peak;
+	private boolean ironman;
+	private Integer level;
 	
+	public boolean isIronman() {
+		return ironman;
+	}
+	public void setIronman(boolean ironman) {
+		this.ironman = ironman;
+	}
+	public Integer getLevel() {
+		return level;
+	}
+	public void setLevel(Integer level) {
+		this.level = level;
+	}
 	public Long getPeak() {
 		return peak;
 	}
@@ -51,10 +65,6 @@ public class Degen implements Comparable<Degen>{
 	}
 	public void setFarmAttempts(int farmAttempts) {
 		this.farmAttempts = farmAttempts;
-	}
-	@Override
-	public int compareTo(Degen arg0) {
-		return arg0.getBank().compareTo(bank);
 	}
 	
 }

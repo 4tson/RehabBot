@@ -1,10 +1,11 @@
 package mx.fortson.rehab.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FarmCollectionBean {
 
-	private List<FarmResultBean> farms;
+	private List<FarmResultBean> farms = new ArrayList<>();
 	private boolean exists;
 	private Long farmedAmount;
 	private Long newFunds;

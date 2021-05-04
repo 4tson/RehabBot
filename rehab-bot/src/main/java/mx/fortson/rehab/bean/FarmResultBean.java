@@ -16,7 +16,14 @@ public class FarmResultBean {
 	private double rateHours;
 	private String name;
 	private int interval;
+	private int level;
 	
+	public int getLevel() {
+		return level;
+	}
+	public void setLevel(int level) {
+		this.level = level;
+	}
 	public int getInterval() {
 		return interval;
 	}

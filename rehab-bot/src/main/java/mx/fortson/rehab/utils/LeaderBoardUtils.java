@@ -3,6 +3,7 @@ package mx.fortson.rehab.utils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +26,11 @@ public class LeaderBoardUtils {
 				degen.setWins((int) queryRecord.get("WINS"));
 				degen.setLosses((int) queryRecord.get("LOSSES"));
 				degen.setPeak((Long) queryRecord.get("PEAK"));
+				degen.setLevel((int) queryRecord.get("LEVEL"));
+				degen.setIronman( (boolean) queryRecord.get("IRONMAN"));
 				result.add(degen);
 			}
-			Collections.sort(result);
+			Collections.sort(result,Comparator.comparing(Degen::getLevel).thenComparing(Degen::getBank).thenComparing(Degen::getPeak).reversed());
 			return result;
 		}catch(SQLException e) {
 			e.printStackTrace();

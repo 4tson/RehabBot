@@ -4,39 +4,49 @@ import mx.fortson.rehab.channels.BotCommands;
 import mx.fortson.rehab.channels.DuelArena;
 import mx.fortson.rehab.channels.Farms;
 import mx.fortson.rehab.channels.FreeFarms;
+import mx.fortson.rehab.channels.HighLow;
 import mx.fortson.rehab.channels.IChannel;
 import mx.fortson.rehab.channels.Services;
 import mx.fortson.rehab.channels.ServicesShop;
 import mx.fortson.rehab.channels.Shop;
 
 public enum ChannelsEnum {
-
-	DUELARENA("duel-arena","arena",new DuelArena(),3, RolesEnum.DEGEN),
-	BOTDISCUSSION("bot-discussion","bot",null,0,RolesEnum.DEGEN,RolesEnum.IRONMAN),
-	BOTCOMMANDS("bot-commands","bot",new BotCommands(),0,RolesEnum.DEGEN,RolesEnum.IRONMAN),
-	SERVICESSHOP("services-shop","services",new ServicesShop(),0,RolesEnum.DEGEN,RolesEnum.IRONMAN),
-	SERVICES("services","services",new Services(),0,RolesEnum.DEGEN,RolesEnum.IRONMAN),
-	SHOP("shop","shop",new Shop(),0,RolesEnum.DEGEN,RolesEnum.IRONMAN),		
-	FARMS("farms","farms",new Farms(),0,RolesEnum.DEGEN,RolesEnum.IRONMAN),
-	FREEFARMS("free-farms","farms",new FreeFarms(),120,RolesEnum.DEGEN,RolesEnum.IRONMAN),
-	BIDSERVICE("bidding-services","services",null,0,RolesEnum.DEGEN),
-	ALL("",null,null,0)
+	HIGHLOW("high-low",CategoriesEnum.GAMBA,new HighLow(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	DUELARENA("duel-arena",CategoriesEnum.GAMBA,new DuelArena(),0, new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{RolesEnum.IRONMAN}),
+	BOTDISCUSSION("bot-discussion",CategoriesEnum.BOT,null,0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	BOTCOMMANDS("bot-commands",CategoriesEnum.BOT,new BotCommands(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	ANNOUNCEMENTS("announcements",CategoriesEnum.BOT,null,0,new RolesEnum[]{},new RolesEnum[] {RolesEnum.EVERYONE}),
+	SERVICESSHOP("services-shop",CategoriesEnum.SERVICES,new ServicesShop(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	SERVICES("services",CategoriesEnum.SERVICES,new Services(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	BIDSERVICE("bidding-services",CategoriesEnum.SERVICES,null,0,new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{}),
+	SHOP("shop",CategoriesEnum.SHOP,new Shop(),0,new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[] {}),		
+	FARMS("farms",CategoriesEnum.FARMS,new Farms(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	FREEFARMS("free-farms",CategoriesEnum.FARMS,new FreeFarms(),120,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	ALL("",null,null,0,null,null)
 	;
 	
 	private String name;
 	private IChannel channel;
-	private String category;
+	private CategoriesEnum category;
 	private int slowmode;
 	private RolesEnum[] permitedRoles;
+	private RolesEnum[] readOnlyRoles;
 	
-	private ChannelsEnum(String name,String category, IChannel channel, int slowmode, RolesEnum...permitedRoles) {
+	private ChannelsEnum(String name,CategoriesEnum category, IChannel channel, int slowmode, RolesEnum[] permitedRoles,RolesEnum[] readOnlyRoles) {
 		this.name = name;
 		this.channel = channel;
 		this.category = category;
 		this.slowmode = slowmode;
 		this.permitedRoles = permitedRoles;
+		this.readOnlyRoles = readOnlyRoles;
 	}
 	
+	
+	public RolesEnum[] getReadOnlyRoles() {
+		return readOnlyRoles;
+	}
+
+
 	public RolesEnum[] getPermitedRoles() {
 		return permitedRoles;
 	}
@@ -53,15 +63,13 @@ public enum ChannelsEnum {
 	
 	public int getSlowmode() {
 		return slowmode;
-	}
-
-	public String getCategory() {
+	}	
+	
+	public CategoriesEnum getCategory() {
 		return category;
 	}
 
-	
-	
-	
+
 	public String getName() {
 		return name;
 	}

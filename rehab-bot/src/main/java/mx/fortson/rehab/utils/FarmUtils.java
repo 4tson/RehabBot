@@ -27,9 +27,7 @@ public class FarmUtils {
 					if(farms > oldAttempts) {
 						farms = oldAttempts;
 					}
-					if(farms>15) {
-						farms = 15;
-					}
+					int degenLevel = DatabaseDegens.getDegenNextLevel(id).getLevel();
 					result.setAttempts(true);
 					int newAttempts = oldAttempts;
 					Long totalFarmed = 0L;
@@ -37,7 +35,7 @@ public class FarmUtils {
 					for(int i = 0; i<farms; i++) {
 						FarmResultBean farmResultBean = new FarmResultBean();
 						newAttempts = newAttempts -1;
-						
+						int itemType = 1;
 						FarmResultEnum farmResult = RandomUtils.randomFarmEnum();
 						farmResultBean.setType(farmResult.getType());					
 						farmResultBean.setFlavourText(RandomUtils.randomStringFromArray(farmResult.getFlavourTexts()));
@@ -48,23 +46,32 @@ public class FarmUtils {
 						case CASH:
 							newFunds = newFunds + farmedAmount;
 							break;
-						case ITEM_GREAT:
-						case ITEM_MEH:
 						case ITEM_UNIQUE:
-							String itemName = RandomUtils.randomStringFromArray(farmResult.getType().getPossibleItems());
+							itemType+=1;
+						case ITEM_GREAT:
+							itemType+=1;
+						case ITEM_MEH:
+							List<String> itemNames = DatabaseDegens.getItemsFromType(itemType);
+							String itemName = RandomUtils.randomStringFromList(itemNames);
 							DatabaseDegens.createItem(itemName, farmedAmount,DatabaseDegens.getDegenId(id),false);
 							farmResultBean.setItemName(itemName);
 							break;
 						case SERVICE:
+							int serviceLevel = RandomUtils.randomInt(degenLevel + 2);
 							String serviceName = RandomUtils.randomStringFromArray(farmResult.getType().getPossibleItems());
-							int farmsFarmed = RandomUtils.randomInt(5) + 1;
-							double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(2.0, 5.0)));
-							int interval = RandomUtils.randomInt(5) + 1;
+							
+							int maxFarms = serviceLevel > 18 ? 9 : serviceLevel > 12 ? 8 : serviceLevel > 8 ? 7 : serviceLevel > 4 ? 6 : serviceLevel > 2 ? 5 : 4;
+							int farmsFarmed = RandomUtils.randomInt(maxFarms);
+							double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(1.0, maxFarms * .5)));
+							int intervalLowerBound = serviceLevel > 30 ? 1 : serviceLevel > 20 ? 2 : serviceLevel > 10 ? 3 : 4;  
+							int interval = RandomUtils.randomInt(6 - intervalLowerBound) + intervalLowerBound;
+							
 							farmResultBean.setName(serviceName);
 							farmResultBean.setFarms(farmsFarmed);
 							farmResultBean.setRateHours(rateHour);
 							farmResultBean.setInterval(interval);
-							DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(id),false);
+							farmResultBean.setLevel(serviceLevel);
+							DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(id),false, serviceLevel);
 							break;
 						}
 						farmList.add(farmResultBean);
@@ -98,16 +105,46 @@ public class FarmUtils {
 		}
 	}
 	
+	public static double getMultiplier(int degenId) {
+		try {
+			return DatabaseDegens.getFarmMultiplier(degenId);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 1;
+	}
+	
 	public static int addFarmsToUser(long idLong) {
 		try {
+			int degenId = DatabaseDegens.getDegenId(idLong);
 			int freeFarms = RandomUtils.randomFreeFarm();
-			
-			DatabaseDegens.addFarmAtt(freeFarms, DatabaseDegens.getDegenId(idLong));
+			double multiplier = getMultiplier(degenId);
+			DatabaseDegens.addFarmAtt(Math.toIntExact(Math.round(freeFarms * multiplier)), degenId);
 			return freeFarms;
 		}catch(SQLException e) {
 			e.printStackTrace();
 		}
 		return 0;
+	}
+
+	public static int getFarms(long idLong) {
+		try {
+			if(DatabaseDegens.existsById(idLong)) {	
+				return DatabaseDegens.getFarmAtts(idLong);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	public static double getMultiplier(Long ownerID) {
+		try {
+			return getMultiplier(DatabaseDegens.getDegenId(ownerID));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 1;
 	}
 	
 }

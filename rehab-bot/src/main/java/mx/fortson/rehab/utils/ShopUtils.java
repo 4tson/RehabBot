@@ -82,9 +82,11 @@ public class ShopUtils {
 		try {
 			
 			ItemBean itemDB = DatabaseDegens.getShopItemById(Long.parseLong(itemIdS));
-			if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
-				DatabaseDegens.updateItemForSale(itemDB.getItemID());
-				return true;
+			if(itemDB!=null) {
+				if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
+					DatabaseDegens.updateItemForSale(itemDB.getItemID());
+					return true;
+				}
 			}
 		}catch(SQLException e) {	
 			e.printStackTrace();
@@ -96,9 +98,11 @@ public class ShopUtils {
 		try {
 			
 			ItemBean itemDB = DatabaseDegens.getShopItemById(Long.parseLong(itemIdS));
-			if(itemDB.getOwnerDiscordId().equals(discId) && itemDB.isForSale()) {
-				DatabaseDegens.updateItemForSale(itemDB.getItemID());
-				return true;
+			if(itemDB!=null) {
+				if(itemDB.getOwnerDiscordId().equals(discId) && itemDB.isForSale()) {
+					DatabaseDegens.updateItemForSale(itemDB.getItemID());
+					return true;
+				}
 			}
 		}catch(SQLException e) {	
 			e.printStackTrace();
@@ -122,15 +126,17 @@ public class ShopUtils {
 			
 			if(service) {
 				ServiceBean serviceDB = DatabaseDegens.getServiceById(Long.parseLong(itemIdS));
-				if(serviceDB.getOwnerDiscordId().equals(discId) && !serviceDB.isForSale()) {
+				if(serviceDB.getOwnerDiscordId().equals(discId) && !serviceDB.isForSale() && !serviceDB.isActive()) {
 					DatabaseDegens.putServiceForSaleSetPrice(serviceDB.getServiceId(),FormattingUtils.parseAmount(priceS));
 					return true;
 				}
 			}else {
 				ItemBean itemDB = DatabaseDegens.getShopItemById(Long.parseLong(itemIdS));
-				if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
-					DatabaseDegens.putItemForSaleSetPrice(itemDB.getItemID(),FormattingUtils.parseAmount(priceS));
-					return true;
+				if(itemDB!=null) {
+					if(itemDB.getOwnerDiscordId().equals(discId) && !itemDB.isForSale()) {
+						DatabaseDegens.putItemForSaleSetPrice(itemDB.getItemID(),FormattingUtils.parseAmount(priceS));
+						return true;
+					}
 				}
 			}
 		}catch(SQLException e) {	

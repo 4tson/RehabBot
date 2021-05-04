@@ -34,12 +34,13 @@
 	      <version>5.3</version>
 	  </dependency>
 	  
-	  <!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->
+	<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 	<dependency>
-	    <groupId>org.hsqldb</groupId>
-	    <artifactId>hsqldb</artifactId>
-	    <version>2.6.0</version>
+	    <groupId>mysql</groupId>
+	    <artifactId>mysql-connector-java</artifactId>
+	    <version>8.0.24</version>
 	</dependency>
+
 	
 	<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 	<dependency>
@@ -96,7 +97,25 @@
         </descriptorRefs>
       </configuration>
     </plugin>
+    
+    <plugin>
+	  <artifactId>maven-resources-plugin</artifactId>
+	  <version>2.5</version>
+	  <configuration>
+	    <encoding>UTF-8</encoding>
+	    <nonFilteredFileExtensions>
+	      <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+	    </nonFilteredFileExtensions>
+	  </configuration>
+	</plugin>
   </plugins>
+  
+    <resources>
+        <resource>
+            <filtering>true</filtering>
+            <directory>src/main/resources</directory>
+        </resource>
+    </resources>
 </build>
   
 </project>

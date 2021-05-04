@@ -12,19 +12,19 @@ public class FormattingUtils {
 
 	private static final NavigableMap<Long, String> suffixes = new TreeMap<> ();
 	static {
-	  suffixes.put(1_000L, "k gp");
-	  suffixes.put(1_000_000L, "M gp");
-	  suffixes.put(1_000_000_000L, "B gp");
-	  suffixes.put(1_000_000_000_000L, "T gp");
-	  suffixes.put(1_000_000_000_000_000L, "P gp");
-	  suffixes.put(1_000_000_000_000_000_000L, "E gp");
+	  suffixes.put(1_000L, "k");
+	  suffixes.put(1_000_000L, "M");
+	  suffixes.put(1_000_000_000L, "B");
+	  suffixes.put(1_000_000_000_000L, "T");
+	  suffixes.put(1_000_000_000_000_000L, "P");
+	  suffixes.put(1_000_000_000_000_000_000L, "E");
 	}
 
-	public static String format(long value) {
+	public static String format(long value, boolean gp) {
 	  //Long.MIN_VALUE == -Long.MIN_VALUE so we need an adjustment here
 	  if (value == Long.MIN_VALUE) return format(Long.MIN_VALUE + 1);
 	  if (value < 0) return "-" + format(-value);
-	  if (value < 1000) return Long.toString(value) + " gp"; //deal with easy case
+	  if (value < 1000) return Long.toString(value) + (gp ?  " gp" : ""); //deal with easy case
 
 	  Entry<Long, String> e = suffixes.floorEntry(value);
 	  Long divideBy = e.getKey();
@@ -32,7 +32,11 @@ public class FormattingUtils {
 
 	  long truncated = value / (divideBy / 10); //the number part of the output times 10
 	  boolean hasDecimal = truncated < 100 && (truncated / 10d) != (truncated / 10);
-	  return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
+	  return hasDecimal ? (truncated / 10d) + suffix + (gp ?  " gp" : "") : (truncated / 10) + suffix + (gp ?  " gp" : "");
+	}
+	
+	public static String format(long value) {
+		return format(value, true);
 	}
 
 	public static String formatFarm(String flavourText, Long farmedAmount) {

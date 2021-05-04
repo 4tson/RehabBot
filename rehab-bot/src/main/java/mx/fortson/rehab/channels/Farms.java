@@ -1,10 +1,13 @@
 package mx.fortson.rehab.channels;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import mx.fortson.rehab.bean.MessageUtilsResultBean;
+import mx.fortson.rehab.bean.FarmCollectionBean;
+import mx.fortson.rehab.bean.FarmResultBean;
+import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
 import mx.fortson.rehab.utils.FarmUtils;
@@ -15,9 +18,10 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class Farms implements IChannel{
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void processMessage(GuildMessageReceivedEvent event) {
-		String messageContent = event.getMessage().getContentDisplay();
+		String messageContent = event.getMessage().getContentRaw();
 		if(messageContent.startsWith("!")) {
 			MessageChannel channel = event.getChannel();
 			User author = event.getAuthor();
@@ -33,8 +37,14 @@ public class Farms implements IChannel{
 							farms = Integer.parseInt(secondArg);
 						}
 					}
-					MessageUtilsResultBean messageUtilsResultBean = MessageUtils.getFarmResult(FarmUtils.farmForUser(author.getIdLong(),farms), author.getIdLong());
-					channel.sendMessage(messageUtilsResultBean.getMessage()).allowedMentions(messageUtilsResultBean.getPingList()).queue();
+					FarmCollectionBean farmCollBean  = FarmUtils.farmForUser(author.getIdLong(),farms);
+					PagedMessageBean paging = MessageUtils.getFarmResult(farmCollBean,author.getIdLong());
+					while(paging.isMoreRecords()) {
+						farmCollBean.setFarms((List<FarmResultBean>)(Object)paging.getLeftOverRecords());
+						channel.sendMessage(paging.getMessage()).allowedMentions(paging.getPingList()).queue();
+						paging = MessageUtils.getFarmResult(farmCollBean,author.getIdLong());
+					}
+					channel.sendMessage(paging.getMessage()).allowedMentions(paging.getPingList()).queue();
 				break;
 				default:
 					BotCommands.commonCommands(ChannelsEnum.FARMS,commandEnum, event);
@@ -42,7 +52,7 @@ public class Farms implements IChannel{
 				}
 			}else {
 				event.getMessage().delete().queue();
-				channel.sendMessage(MessageUtils.announceWrongCommand(messageContent)).allowedMentions(new ArrayList<>()).queue();
+				channel.sendMessage(MessageUtils.announceWrongCommand(event.getMessage().getContentDisplay())).allowedMentions(new ArrayList<>()).queue();
 			}
 		}else {
 			event.getMessage().delete().queue();
