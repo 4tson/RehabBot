@@ -49,9 +49,9 @@ public class LeaderboardImage {
 		
 		int maxY = combined.getHeight() - 65 - 35 / graphic.getFontMetrics().getHeight();
 		
-		int nameWidth = 100;
+		int nameWidth = 120;
 		int amountWidth = graphic.getFontMetrics().stringWidth("Bank") + 15;
-		int farmWidth = graphic.getFontMetrics().stringWidth("99999") + 15;
+		int farmWidth = graphic.getFontMetrics().stringWidth("999999") + 15;
 		int timesFarmedWidth = graphic.getFontMetrics().stringWidth("Farmed") + 15;
 		int lvlWidth = graphic.getFontMetrics().stringWidth("100") + 15;
 		
