@@ -19,6 +19,7 @@ import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.constants.DBQueriesConstants;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.database.DegensDataSource;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class DatabaseDegens {
 	
@@ -286,7 +287,7 @@ public class DatabaseDegens {
 			return 0L;
 		}
 	}
-	public static void createService(String serviceName, int farms, double rateHour, int interval, int degenID,boolean predetermined, int level) throws SQLException {
+	public static void createService(String serviceName, int farms, double rateHour, int interval, int degenID,int type, int level) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.CREATE_SERVICE)){
 			stmt.setInt(1, farms);
@@ -294,7 +295,7 @@ public class DatabaseDegens {
 			stmt.setString(3, serviceName);
 			stmt.setInt(4, interval);
 			stmt.setInt(5, degenID);
-			stmt.setBoolean(6, predetermined);
+			stmt.setInt(6, type);
 			stmt.setInt(7, level);
 			stmt.executeUpdate();
 		}
@@ -429,6 +430,7 @@ public class DatabaseDegens {
 				record.setOwnerDiscordId(rs.getLong(9));
 				record.setPrice(rs.getLong(10));
 				record.setOwnerName(rs.getString(11));
+				record.setType(rs.getInt(12));
 				result.add(record);
 			}
 		}
@@ -576,10 +578,11 @@ public class DatabaseDegens {
 		}
 	}
 
-	public static ServiceBean selectBiddableService() throws SQLException {
+	public static ServiceBean selectBiddableService(int type) throws SQLException {
 		ServiceBean result = null;
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_BIDDABLE_SERVICE)){
+			stmt.setInt(1, type);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
 				result = new ServiceBean();
@@ -600,9 +603,10 @@ public class DatabaseDegens {
 		return result;
 	}
 
-	public static int getBiddableServiceId() throws SQLException {
+	public static int getBiddableServiceId(int type) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.GET_BIDDABLE_SERVICE_ID)){
+			stmt.setInt(1, type);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
 				return rs.getInt(1);
@@ -620,6 +624,7 @@ public class DatabaseDegens {
 			stmt.setInt(4, biddableService.getIntervalMinutes());
 			stmt.setInt(5, getDegenId(biddableService.getWinnerID()));
 			stmt.setLong(6, biddableService.getBid());
+			stmt.setInt(7, biddableService.getType());
 			stmt.executeUpdate();
 		}
 	}
@@ -651,7 +656,7 @@ public class DatabaseDegens {
 			stmt.setString(3, name);
 			stmt.setInt(4, rate);
 			stmt.setInt(5, degenId);
-			stmt.setBoolean(6, true);
+			stmt.setInt(6, 2);
 			stmt.setLong(7, price);
 			stmt.setInt(8, level);
 			stmt.executeUpdate();
@@ -710,7 +715,8 @@ public class DatabaseDegens {
 			stmt.setString(3, biddableService.getServiceName());
 			stmt.setInt(4, biddableService.getIntervalMinutes());
 			stmt.setInt(5, DatabaseDegens.getDegenId(biddableService.getWinnerID()));
-			stmt.setLong(6, biddableService.getBid());
+			stmt.setInt(6, biddableService.getType());
+			stmt.setLong(7, biddableService.getBid());
 			stmt.executeUpdate();
 		}
 	}
@@ -810,5 +816,30 @@ public class DatabaseDegens {
 			}
 		}
 		return 1.00;
+	}
+
+	public static Pair<Long, Integer> selectDuplicateItemsAndValue(long idLong, int itemid) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_DUPE_COUNT_VAL)){
+			stmt.setInt(1, itemid);
+			stmt.setLong(2, idLong);
+			stmt.setLong(3, idLong);
+			stmt.setInt(4, itemid);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				if(rs.getInt(1)>1) {
+					return Pair.of(rs.getLong(2), rs.getInt(3));	
+				}
+			}
+		}
+		return null;
+	}
+
+	public static void deleteItem(int itemId) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.DELETE_ITEM)){
+			stmt.setInt(1, itemId);
+			stmt.executeUpdate();
+		}
 	}
 }

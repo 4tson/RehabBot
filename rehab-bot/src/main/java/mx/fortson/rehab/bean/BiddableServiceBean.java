@@ -15,8 +15,9 @@ public class BiddableServiceBean {
 	private Long winnerID;
 	private Long bid;
 	private Long previousOwner;
+	private int type;
 	
-	public BiddableServiceBean(Long previousOwner) {
+	public BiddableServiceBean(Long previousOwner, int type) {
 		this.serviceName = RandomUtils.randomStringFromArray(RehabBotConstants.SERVICE_NAMES);
 		this.farms = RandomUtils.randomInt(5);
 		this.lengthHours = Double.parseDouble(String.format("%.1f", RandomUtils.randomDouble(1.0, 2.5)));
@@ -24,17 +25,26 @@ public class BiddableServiceBean {
 		this.winnerID = RehabBot.getBotId();
 		this.bid = RandomUtils.randomAmountFromRange(new Long[]{50000000L,200000000L});
 		this.previousOwner = previousOwner;
+		this.type = type;
 		
 	}
-	public BiddableServiceBean(ServiceBean service, Long previousOwner) {
+	public BiddableServiceBean(ServiceBean service, Long previousOwner, int type) {
 		this.serviceName = service.getName();
 		this.farms = service.getFarms();
 		this.lengthHours = service.getLength();
 		this.intervalMinutes = service.getInterval();
 		this.winnerID = service.getOwnerDiscordId();
 		this.bid = service.getPrice();
+		this.type = type;
 	}
 	
+	
+	public int getType() {
+		return type;
+	}
+	public void setType(int type) {
+		this.type = type;
+	}
 	public Long getPreviousOwner() {
 		return previousOwner;
 	}

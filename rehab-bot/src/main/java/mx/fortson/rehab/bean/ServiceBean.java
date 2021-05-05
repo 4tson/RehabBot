@@ -8,6 +8,7 @@ public class ServiceBean extends ItemBean{
 	private String name;
 	private int interval;
 	private boolean active;
+	private int type;
 	
 	
 	public String info() {
@@ -40,6 +41,14 @@ public class ServiceBean extends ItemBean{
 		this.active = active;
 	}
 
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
 
 	@Override
 	public boolean isForSale() {

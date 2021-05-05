@@ -182,8 +182,10 @@ public class RehabBot {
 		TextChannel servicesShopChannel = getOrCreateChannel(ChannelsEnum.SERVICESSHOP);
 		{
 			TextChannel bidServicesChannel = getOrCreateChannel(ChannelsEnum.BIDSERVICE);
+			TextChannel blindBidServicesChannel = getOrCreateChannel(ChannelsEnum.BLINDBIDSERVICE);
 			TextChannel highLowChannel = getOrCreateChannel(ChannelsEnum.HIGHLOW);
 			purgeChannel(bidServicesChannel);
+			purgeChannel(blindBidServicesChannel);
 			purgeChannel(highLowChannel);
 			purgeChannel(servicesShopChannel);
 		}
@@ -227,7 +229,8 @@ public class RehabBot {
 						true,
 						runningService.getServiceId(),
 						sl,
-						expireTime);
+						expireTime,
+						runningService.getType());
 				
 				Timer serviceTimer = new Timer("Service-" + runningService.getServiceId() + "Timer");
 				serviceTimer.schedule(serviceTask, 0L, (1000 * 60 * runningService.getInterval()));
@@ -242,7 +245,7 @@ public class RehabBot {
 			}
 		}
 		//We create the new services service
-		ServicesUtils.restoreBiddableService();
+		ServicesUtils.restoreBiddableServices();
 	}
 
 	public static void deleteDegen(Long discordId) {
@@ -400,7 +403,8 @@ public class RehabBot {
 						farmsFarmed = interval;
 					}
 					ServiceBean service = new ServiceBean(0, farmsFarmed, rateHour, serviceName, interval, false);
-					DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(idLong),false, serviceLevel);
+					
+					DatabaseDegens.createService(serviceName, farmsFarmed, rateHour,interval, DatabaseDegens.getDegenId(idLong),3, serviceLevel);
 					result.setService(service);
 					result.setFreeService(true);
 				}

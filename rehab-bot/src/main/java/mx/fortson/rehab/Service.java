@@ -19,8 +19,9 @@ public class Service extends TimerTask {
 	private final int serviceID;
 	private final ServiceListener sl;
 	private final Long expiry;
+	private final int type;
 	
-	public Service(Long ownerID, String serviceName, int farms, Long channelId, boolean delete, int serviceID, ServiceListener sl, Long expiry) {
+	public Service(Long ownerID, String serviceName, int farms, Long channelId, boolean delete, int serviceID, ServiceListener sl, Long expiry, int type) {
 		this.ownerID = ownerID;
 		this.serviceName = serviceName;
 		this.farms = farms;
@@ -29,6 +30,7 @@ public class Service extends TimerTask {
 		this.serviceID = serviceID;
 		this.sl = sl;
 		this.expiry = expiry;
+		this.type = type;
 		RehabBot.getApi().addEventListener(sl);
 		RehabBot.getApi().getGuildChannelById(channelId).getManager().setSlowmode(15).queue();
 	}	
@@ -51,7 +53,7 @@ public class Service extends TimerTask {
 		if(!delete) {
 			RehabBot.getApi().getGuildChannelById(channelId).getManager().setSlowmode(0).complete();
 			ServicesUtils.updateBiddableServiceActive();
-			ServicesUtils.createNewService(new BiddableServiceBean(ownerID));
+			ServicesUtils.createNewService(new BiddableServiceBean(ownerID,type));
 		}
 		if(delete) {
 			ServicesUtils.deleteService(serviceID);

@@ -374,20 +374,26 @@ public class MessageUtils {
 		return sb.toString();
 	}
 
-	public static CharSequence announceNewService(BiddableServiceBean biddableService, Long serviceRoleId) {
+	public static CharSequence announceNewService(BiddableServiceBean biddableService, Long serviceRoleId, boolean showable) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<@&")
 		.append(serviceRoleId)
 		.append(">")
 		.append(" `")
 		.append(biddableService.getServiceName())
-		.append("` has appeared. Offering `")
-		.append(biddableService.getFarms())
-		.append("` farm(s) every `")
-		.append(biddableService.getIntervalMinutes())
-		.append("` minute(s) for `")
-		.append(biddableService.getLengthHours())
-		.append("` hour(s). Please type !bid {amount} in order to bid for this once in a lifetime service. Only one service is active at a time, so don't miss out!")
+		.append("` has appeared. ");
+		if(showable) {
+			sb.append("Offering `")
+			.append(biddableService.getFarms())
+			.append("` farm(s) every `")
+			.append(biddableService.getIntervalMinutes())
+			.append("` minute(s) for `")
+			.append(biddableService.getLengthHours())
+			.append("` hour(s).");
+		}else {
+			sb.append("It is a `mystery` service!");
+		}
+		sb.append(" Please type !bid {amount} in order to bid for this once in a lifetime service. Only one service is active at a time, so don't miss out!")
 		.append(" The bid starts at `")
 		.append(FormattingUtils.format(biddableService.getBid()))
 		.append("`");
@@ -580,5 +586,25 @@ public class MessageUtils {
 			result.setMessage("Could not generate Leaderboard");
 		}
 		return result;
+	}
+
+	public static CharSequence confirmTradeIn(long idLong, int farms) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(idLong)
+		.append("> You will get `")
+		.append(farms)
+		.append("` farm(s) for this item, the hidden multiplier does not apply here. Do you accept? Y/N");
+		return sb.toString();
+	}
+
+	public static CharSequence announceTradeIn(Long userId, int farms) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(userId)
+		.append("> You have traded your item in, you have been awarded `")
+		.append(farms)
+		.append("` farm(s).");
+		return sb.toString();
 	}
 }

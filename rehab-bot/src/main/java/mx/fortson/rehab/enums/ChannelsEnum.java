@@ -6,6 +6,7 @@ import mx.fortson.rehab.channels.Farms;
 import mx.fortson.rehab.channels.FreeFarms;
 import mx.fortson.rehab.channels.HighLow;
 import mx.fortson.rehab.channels.IChannel;
+import mx.fortson.rehab.channels.DupeTradeIn;
 import mx.fortson.rehab.channels.Services;
 import mx.fortson.rehab.channels.ServicesShop;
 import mx.fortson.rehab.channels.Shop;
@@ -18,8 +19,10 @@ public enum ChannelsEnum {
 	ANNOUNCEMENTS("announcements",CategoriesEnum.BOT,null,0,new RolesEnum[]{},new RolesEnum[] {RolesEnum.EVERYONE}),
 	SERVICESSHOP("services-shop",CategoriesEnum.SERVICES,new ServicesShop(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	SERVICES("services",CategoriesEnum.SERVICES,new Services(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
-	BIDSERVICE("bidding-services",CategoriesEnum.SERVICES,null,0,new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{}),
-	SHOP("shop",CategoriesEnum.SHOP,new Shop(),0,new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[] {}),		
+	BIDSERVICE("bidding-services",CategoriesEnum.SERVICES,null,0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[]{}),
+	BLINDBIDSERVICE("blind-bidding-services",CategoriesEnum.SERVICES,null,0,new RolesEnum[] {RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	SHOP("shop",CategoriesEnum.ITEMS,new Shop(),0,new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[] {}),
+	DUPETRADEIN("dupe-tradein",CategoriesEnum.ITEMS,new DupeTradeIn(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),	
 	FARMS("farms",CategoriesEnum.FARMS,new Farms(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	FREEFARMS("free-farms",CategoriesEnum.FARMS,new FreeFarms(),120,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	ALL("",null,null,0,null,null)
