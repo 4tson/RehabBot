@@ -30,17 +30,17 @@ public class DBQueriesConstants {
 	
 	public static final String UPDATE_DEGEN_RATE = "update degens set wins = wins + ?, losses = losses + ? where discordid = ?";
 	
-	public static final String SELECT_FOR_SALE_SHOP = "select s.itemid, s.itemname, s.price, d.name, s.value from shop s, degens d where s.forsale = true and s.degenid = d.degenid";
+	public static final String SELECT_FOR_SALE_SHOP = "select s.itemid, i.name, s.price, d.name, s.value from shop s, degens d, items i where s.forsale = true and s.degenid = d.degenid and s.item = i.itemid";
 	
 	public static final String SELECT_FOR_SALE_SERVICES = "select s.serviceid, concat(s.farms ,'f/' ,s.rateminutes ,'mins for ',s.lengthhours, 'hrs.') , s.price, d.name, 73 from services s, degens d where s.forsale = true and s.degenid = d.degenid and s.type <> 2";
 	
-	public static final String SELECT_ITEM_BY_ID = "select s.itemid, s.itemname, s.degenid, s.price, s.forsale, d.discordid, s.value from shop s, degens d where itemid = ? and d.degenid = s.degenid";
+	public static final String SELECT_ITEM_BY_ID = "select s.itemid, i.name, s.degenid, s.price, s.forsale, d.discordid, s.value from shop s, degens d, items i where s.itemid = ? and d.degenid = s.degenid and i.itemid = s.item";
 	
 	public static final String UPDATE_SHOP_NEW_OWNER = "update shop set degenid = ?, forsale = false where itemid = ?";
 	
 	public static final String UPDATE_SERVICE_NEW_OWNER = "update services set degenid = ?, forsale = false where serviceid = ?";
 	
-	public static final String SELECT_ITEMS_BY_DISCID = "select s.itemid, s.itemname, s.price, d.name, s.forsale, s.value, i.imagename from shop s, degens d, items i where i.name = s.itemname and s.degenid = d.degenid and d.discordid = ? order by i.type desc";
+	public static final String SELECT_ITEMS_BY_DISCID = "select s.itemid, i.name, s.price, d.name, s.forsale, s.value, i.imagename from shop s, degens d, items i where i.itemid = s.item and s.degenid = d.degenid and d.discordid = ? order by i.type desc, i.name";
 	
 	public static final String SELECT_SERVICES_BY_DISCID = "select s.serviceid, concat(s.farms ,'f/' ,s.rateminutes ,'mins for ',s.lengthhours, 'hrs.'), s.price, d.name, s.forsale, 73, case when s.active then 'y' else 'n' end, concat(s.farms ,'f/' ,s.rateminutes ,'m\n ',s.lengthhours, 'h'), s.level from services s, degens d where s.degenid = d.degenid and d.discordid = ? order by s.serviceid asc";
 	
@@ -50,7 +50,9 @@ public class DBQueriesConstants {
 	
 	public static final String UPDATE_SERVICE_FOR_SALE_SET_PRICE = "update services set forsale = not forsale, price = ? where serviceid = ?";
 	
-	public static final String CREATE_ITEM_FOR_SALE = "insert into shop(itemname, price,value, degenid, forsale) values (?,?,?,?,?)";
+	public static final String CREATE_ITEM_FOR_SALE = "insert into shop(item, price,value, degenid, forsale) values (?,?,?,?,?)";
+	
+	public static final String SELECT_ITEM_ID_NAME = "select itemid from items where name = ?";
 	
 	public static final String SELECT_INV_SUM = "select sum(s.value) from shop s, degens d where s.degenid = d.degenid and d.discordid = ?";
 	
@@ -122,11 +124,11 @@ public class DBQueriesConstants {
 	
 	public static final String SELECT_MULTIPLIER = "select ifnull(sum(d.multiplier),0) + \r\n"
 			+ "(select farmmultiplier from levels, degens where levels.level = (select level from degens where degenid = ?) and degens.degenid = ?) \r\n"
-			+ "from (select t.multiplier from types t, items i, shop s where s.itemname = i.name and i.type = t.typeid and s.degenid = ? and s.forsale = false group by i.name) d";
+			+ "from (select t.multiplier from types t, items i, shop s where s.item = i.itemid and i.type = t.typeid and s.degenid = ? and s.forsale = false group by i.name) d";
 	
 	public static final String SELECT_DUPE_COUNT_VAL = "select a.count, s.value, i.type from(\r\n"
-			+ "select count(1) count from shop, degens where itemname = (select itemname from shop, degens where itemid = ? and discordid = ? and degens.degenid = shop.degenid and forsale = false) \r\n"
-			+ "and shop.degenid = degens.degenid and discordid = ? and forsale = false) a, shop s, items i where s.itemid = ? and i.name = s.itemname";
+			+ "select count(1) count from shop, degens where item = (select item from shop, degens where itemid = ? and discordid = ? and degens.degenid = shop.degenid and forsale = false) \r\n"
+			+ "and shop.degenid = degens.degenid and discordid = ? and forsale = false) a, shop s, items i where s.itemid = ? and i.itemid = s.item";
 	
 	public static final String DELETE_ITEM = "delete from shop where itemid = ?";
 }

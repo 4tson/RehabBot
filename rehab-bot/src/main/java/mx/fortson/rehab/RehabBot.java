@@ -74,20 +74,28 @@ public class RehabBot {
 			          .setMemberCachePolicy(MemberCachePolicy.ALL) // ignored if chunking enabled
 			          .enableIntents(GatewayIntent.GUILD_MEMBERS)
 			          .setEnableShutdownHook(false);
+			System.out.println("Creating api");
 			api = builder.build()
 			.awaitReady();
+			
 			Long botDiscId = getBotId();
+			
 			if(register(botDiscId,"Shop Owner",false).equals(RegisterResultEnum.SUCCESS)) {
 				registerPredefinedServices(botDiscId);
 			}
 			guild = api.getGuildById(getGuildId());
+			System.out.println("Initializing channels");
 			initChannels();
+			System.out.println("Clearing and restarting services");
 			clearAndRestartServices();
+			
 			if(isAnnounceUp()) {
 				announceUp();
 			}
+			System.out.println("Registering the listeners");
 			getApi().addEventListener(new MessageListener());
 			getApi().addEventListener(new LeaveListener());
+			System.out.println("We up");
 		}catch(Exception e) {
 			e.printStackTrace();
 		}

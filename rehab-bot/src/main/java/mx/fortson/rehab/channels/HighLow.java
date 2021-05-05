@@ -115,7 +115,7 @@ public final class HighLow implements IChannel{
 			.append("> You have `")
 			.append(playerWins.getValue().cashOut())
 			.append("` farm(s) you can cash out and your rate is `")
-			.append(playerWins.getValue().getRate())
+			.append(String.format("%.2f", playerWins.getValue().getRate()))
 			.append("`.");
 		}
 		return sb.toString();

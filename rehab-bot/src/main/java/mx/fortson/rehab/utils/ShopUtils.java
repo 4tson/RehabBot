@@ -110,16 +110,6 @@ public class ShopUtils {
 		return false;
 	}
 
-	public static boolean putForSaleNew(String itemName, String priceS, long ownerId) {
-		try {
-			
-			DatabaseDegens.createItem(itemName, Long.parseLong(priceS),DatabaseDegens.getDegenId(ownerId),true);
-			return true;
-		}catch(SQLException e) {	
-			e.printStackTrace();
-		}
-		return false;
-	}
 
 	public static boolean putForSale(String itemIdS, String priceS, long discId, boolean service) {
 		try {

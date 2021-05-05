@@ -275,8 +275,8 @@ public class ServicesUtils {
 					}else if(biddableService.isActive()) {
 						Long timeToRun = (long) (1000 * 60 * 60 * biddableService.getLength());
 						Long expireTime = timeToRun + System.currentTimeMillis();
-						TextChannel servicesChannel = biddableService.getType()==1 ? RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE) : RehabBot.getOrCreateChannel(ChannelsEnum.BLINDBIDSERVICE);
 						
+						TextChannel servicesChannel = biddableService.getType()==1 ? RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE) : RehabBot.getOrCreateChannel(ChannelsEnum.BLINDBIDSERVICE);
 						ServiceListener sl = new ServiceListener(servicesChannel.getIdLong(), expireTime, 0);
 						
 						Service serviceTask = new Service(biddableService.getOwnerDiscordId(),

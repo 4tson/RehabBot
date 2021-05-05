@@ -141,7 +141,7 @@ public class MessageUtils {
 			StringBuilder sb = new StringBuilder();
 			
 			for(FarmResultBean farmResult : farmCollectionBean.getFarms()) {
-				if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-260){
+				if(sb.length()<RehabBotConstants.DISCORD_MAX_MESSAGE_LENGTH-400){
 					if(farmResult.getType().equals(FarmTypeEnum.ITEM_UNIQUE) || farmResult.getType().equals(FarmTypeEnum.SERVICE)){
 						sb.append("<@&")
 						.append(RehabBot.getOrCreateRole(RolesEnum.UNIQUES).getIdLong())

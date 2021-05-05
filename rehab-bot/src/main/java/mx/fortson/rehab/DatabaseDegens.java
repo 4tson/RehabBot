@@ -255,10 +255,10 @@ public class DatabaseDegens {
 		}
 	}
 
-	public static void createItem(String itemName, long price, long ownerId, boolean forSale) throws SQLException {
+	public static void createItem(int itemId, long price, long ownerId, boolean forSale) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.CREATE_ITEM_FOR_SALE)){
-			stmt.setString(1, itemName);
+			stmt.setInt(1, itemId);
 			stmt.setLong(2, price);
 			stmt.setLong(3, price);
 			stmt.setLong(4, ownerId);
@@ -598,6 +598,7 @@ public class DatabaseDegens {
 				result.setOwnerDiscordId(rs.getLong(9));
 				result.setPrice(rs.getLong(10));
 				result.setOwnerName(rs.getString(11));
+				result.setType(type);
 			}
 		}
 		return result;
@@ -841,5 +842,17 @@ public class DatabaseDegens {
 			stmt.setInt(1, itemId);
 			stmt.executeUpdate();
 		}
+	}
+
+	public static int getItemIdByName(String itemName) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_ITEM_ID_NAME)){
+			stmt.setString(1, itemName);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+		return 0;
 	}
 }

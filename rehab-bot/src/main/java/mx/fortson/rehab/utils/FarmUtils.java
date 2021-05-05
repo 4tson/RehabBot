@@ -53,7 +53,8 @@ public class FarmUtils {
 						case ITEM_MEH:
 							List<String> itemNames = DatabaseDegens.getItemsFromType(itemType);
 							String itemName = RandomUtils.randomStringFromList(itemNames);
-							DatabaseDegens.createItem(itemName, farmedAmount,DatabaseDegens.getDegenId(id),false);
+							int itemId = DatabaseDegens.getItemIdByName(itemName);
+							DatabaseDegens.createItem(itemId, farmedAmount,DatabaseDegens.getDegenId(id),false);
 							farmResultBean.setItemName(itemName);
 							break;
 						case SERVICE:
