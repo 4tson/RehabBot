@@ -14,7 +14,7 @@ import mx.fortson.rehab.channels.Slots;
 
 public enum ChannelsEnum {
 	HIGHLOW("high-low",CategoriesEnum.GAMBA,new HighLow(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
-	SLOTS("slots",CategoriesEnum.GAMBA,new Slots(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	SLOTS("slots",CategoriesEnum.GAMBA,new Slots(),3,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	DUELARENA("duel-arena",CategoriesEnum.GAMBA,new DuelArena(),0, new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{RolesEnum.IRONMAN}),
 	BOTDISCUSSION("bot-discussion",CategoriesEnum.BOT,null,0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	BOTCOMMANDS("bot-commands",CategoriesEnum.BOT,new BotCommands(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
