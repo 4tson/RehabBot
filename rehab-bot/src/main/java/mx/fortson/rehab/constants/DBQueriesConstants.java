@@ -131,4 +131,12 @@ public class DBQueriesConstants {
 			+ "and shop.degenid = degens.degenid and discordid = ? and forsale = false) a, shop s, items i where s.shopid = ? and i.itemid = s.item";
 	
 	public static final String DELETE_ITEM = "delete from shop where shopid = ?";
+
+	public static final String SELECT_JACKPOT = "select payout from slots where name = 'Jackpot'";
+	
+	public static final String SELECT_SLOTS_ROLLS = "select name, unicode, payout, weight from slots order by payout asc";
+	
+	public static final String RESET_JACKPOT = "update slots set payout = (select prop_value from properties where prop_key = 'JACKPOT') where name = 'Jackpot'";
+	
+	public static final String ADD_TO_JACKPOT = "update slots set payout = payout + 1 where name = 'Jackpot'";
 }

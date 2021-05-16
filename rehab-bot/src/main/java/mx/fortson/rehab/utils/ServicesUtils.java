@@ -240,7 +240,6 @@ public class ServicesUtils {
 		try {
 			DatabaseDegens.updateBiddableActive();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

@@ -16,6 +16,7 @@ import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.LevelBean;
 import mx.fortson.rehab.bean.PlayerWinsBean;
 import mx.fortson.rehab.bean.ServiceBean;
+import mx.fortson.rehab.bean.SlotsRollBean;
 import mx.fortson.rehab.constants.DBQueriesConstants;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.database.DegensDataSource;
@@ -854,5 +855,43 @@ public class DatabaseDegens {
 			}
 		}
 		return 0;
+	}
+
+	public static int getCurrentJackpot() throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_JACKPOT)){
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+		return 0;
+	}
+
+	public static List<SlotsRollBean> getSlotsRolls() throws SQLException {
+		List<SlotsRollBean> result = new ArrayList<>();
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_SLOTS_ROLLS)){
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()) {
+				result.add(new SlotsRollBean(rs.getString(1),rs.getString(2),rs.getInt(3),rs.getDouble(4)));
+			}
+			
+		}
+		return result;
+	}
+
+	public static void resetJackpot() throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.RESET_JACKPOT)){
+			stmt.executeUpdate();
+		}
+	}
+
+	public static void addToJackpot() throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.ADD_TO_JACKPOT)){
+			stmt.executeUpdate();
+		}
 	}
 }

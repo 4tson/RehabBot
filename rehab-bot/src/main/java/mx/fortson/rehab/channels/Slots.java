@@ -24,6 +24,12 @@ public class Slots implements IChannel{
 				case ROLL:
 					channel.sendMessage(MessageUtils.announceSlotsRoll(SlotsUtils.roll(author.getIdLong()))).allowedMentions(new ArrayList<>()).queue();
 					break;
+				case JACKPOT:
+					channel.sendMessage(MessageUtils.announceJackpot(SlotsUtils.getCurrentJackpot())).queue();
+					break;
+				case PAYOUTS:
+					channel.sendMessage(MessageUtils.announcePayouts(SlotsUtils.getCurrentPayouts())).queue();
+					break;
 				default:
 					BotCommands.commonCommands(ChannelsEnum.SLOTS,commandEnum, event);
 					break;	

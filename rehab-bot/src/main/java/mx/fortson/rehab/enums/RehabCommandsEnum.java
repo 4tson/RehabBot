@@ -78,6 +78,10 @@ public enum RehabCommandsEnum {
 	TRADEINDUPE("!tradein [id]","Trades a duplicate item for farms. The amount of farms you get is calculated from the rarity of the item as well as its value.",ChannelsEnum.DUPETRADEIN, true),
 	
 	ROLL("!roll","Place your 5 farms in the slot machine and roll like the degenerate you are.",ChannelsEnum.SLOTS, true),
+	
+	PAYOUTS("!payouts","Show the information for the payouts of each roll.",ChannelsEnum.SLOTS, true),
+	
+	JACKPOT("!jackpot","Displays the current jackpot value.",ChannelsEnum.SLOTS, true),
 	;
 	
 	

@@ -8,8 +8,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.util.Pair;
 
+import mx.fortson.rehab.bean.SlotsRollBean;
 import mx.fortson.rehab.enums.FarmResultEnum;
-import mx.fortson.rehab.enums.SlotsEnum;
 
 public class RandomUtils {
 	
@@ -58,10 +58,10 @@ public class RandomUtils {
 		return new EnumeratedDistribution<>(itemWeights).sample();
     }
 	
-	public static SlotsEnum randomSlotRoll()  {
-		final List<Pair<SlotsEnum, Double>> slotsWeights = new ArrayList<>();
-		for (SlotsEnum i: SlotsEnum.values()) {
-			slotsWeights.add(new Pair<SlotsEnum, Double>(i, i.getWeight()));
+	public static SlotsRollBean randomSlotRoll(List<SlotsRollBean> rolls)  {
+		final List<Pair<SlotsRollBean, Double>> slotsWeights = new ArrayList<>();
+		for (SlotsRollBean i: rolls) {
+			slotsWeights.add(new Pair<SlotsRollBean, Double>(i, i.getWeight()));
 		}
 		return new EnumeratedDistribution<>(slotsWeights).sample();
     }

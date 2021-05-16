@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.text.translate.UnicodeUnescaper;
+
 import mx.fortson.rehab.DatabaseDegens;
 import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.bean.BankBean;
@@ -21,6 +23,7 @@ import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
 import mx.fortson.rehab.bean.ServiceBean;
+import mx.fortson.rehab.bean.SlotsResultBean;
 import mx.fortson.rehab.bean.SlotsRollBean;
 import mx.fortson.rehab.bean.TransactionResultBean;
 import mx.fortson.rehab.constants.RehabBotConstants;
@@ -610,7 +613,7 @@ public class MessageUtils {
 		return sb.toString();
 	}
 
-	public static CharSequence announceSlotsRoll(SlotsRollBean roll) {
+	public static CharSequence announceSlotsRoll(SlotsResultBean roll) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<@")
 		.append(roll.getDiscId())
@@ -620,6 +623,27 @@ public class MessageUtils {
 			sb.append("\nYou won `")
 			.append(roll.getFarmsWon())
 			.append("` farm(s)! Congratulations.");
+		}
+		return sb.toString();
+	}
+
+	public static CharSequence announceJackpot(int currentJackpot) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("The current jackpot is `")
+		.append(currentJackpot)
+		.append("` farms. Good luck!");
+		return sb.toString();
+	}
+
+	public static CharSequence announcePayouts(List<SlotsRollBean> currentPayouts) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Payout structure:");
+		for(SlotsRollBean slotsRoll : currentPayouts) {
+			sb.append("\n")
+			.append(new UnicodeUnescaper().translate(slotsRoll.getUnicode()))
+			.append(" - `")
+			.append(slotsRoll.getPayout())
+			.append("` farms.");
 		}
 		return sb.toString();
 	}
