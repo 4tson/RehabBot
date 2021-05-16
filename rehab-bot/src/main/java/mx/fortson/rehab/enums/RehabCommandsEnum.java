@@ -76,6 +76,8 @@ public enum RehabCommandsEnum {
 	REMUNIQUES("!remuniques","Removes the uniques role, this means you wont get pinged when a unique or service is farmed by someone.",ChannelsEnum.BOTCOMMANDS, true),
 	
 	TRADEINDUPE("!tradein [id]","Trades a duplicate item for farms. The amount of farms you get is calculated from the rarity of the item as well as its value.",ChannelsEnum.DUPETRADEIN, true),
+	
+	ROLL("!roll","Place your 5 farms in the slot machine and roll like the degenerate you are.",ChannelsEnum.SLOTS, true),
 	;
 	
 	

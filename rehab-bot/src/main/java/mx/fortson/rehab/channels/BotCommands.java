@@ -73,8 +73,12 @@ public class BotCommands implements IChannel{
 					case LEVELUP:
 						LevelBean level = LevelUtils.getNextLevel(author.getIdLong());
 						if(level!=null) {
-							channel.sendMessage(MessageUtils.confirmLevelUp(author.getIdLong(), level)).allowedMentions(new ArrayList<>()).queue();
-							RehabBot.getApi().addEventListener(new LevelUpStateMachine(author.getIdLong(),level, event.getMessageIdLong()));
+							if(level.getLevel()<94) {
+								channel.sendMessage(MessageUtils.confirmLevelUp(author.getIdLong(), level)).allowedMentions(new ArrayList<>()).queue();
+								RehabBot.getApi().addEventListener(new LevelUpStateMachine(author.getIdLong(),level, event.getMessageIdLong()));
+							}else {
+								channel.sendMessage("You're max level, congrats").queue();
+							}
 						}else {
 							channel.sendMessage("Could not retrieve level data, try again later.").queue();
 						}
@@ -143,10 +147,12 @@ public class BotCommands implements IChannel{
 				}
 			}
 			messageAction.addFile(result.getImageBytes(), result.getImageName()).queue();
-			channel.sendMessage("Inventory sent via PM.").queue();
+			pm.sendMessage(MessageUtils.getUserFunds(FundUtils.getBankValue(author.getIdLong()), author.getName())).queue();
+			channel.sendMessage("Inventory and bank sent via PM.").queue();
 			break;
 		case FUNDS:
-			channel.sendMessage(MessageUtils.getUserFunds(FundUtils.getBankValue(author.getIdLong()), author.getName())).allowedMentions(new ArrayList<>()).queue();
+			event.getAuthor().openPrivateChannel().complete().sendMessage(MessageUtils.getUserFunds(FundUtils.getBankValue(author.getIdLong()), author.getName())).queue();
+			channel.sendMessage("Bank sent via PM.").queue();
 			break;
 		case FARMS:
 			channel.sendMessage(MessageUtils.getuserFarms(FarmUtils.getFarms(author.getIdLong()), author.getIdLong())).allowedMentions(new ArrayList<>()).queue();

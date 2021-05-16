@@ -49,8 +49,8 @@ public class LeaderboardImage {
 		
 		int maxY = combined.getHeight() - 65 - 35 / graphic.getFontMetrics().getHeight();
 		
-		int nameWidth = 120;
-		int amountWidth = graphic.getFontMetrics().stringWidth("Bank") + 15;
+		int nameWidth = 180;
+		int amountWidth = graphic.getFontMetrics().stringWidth("Peak") + 15;
 		int farmWidth = graphic.getFontMetrics().stringWidth("999999") + 15;
 		int timesFarmedWidth = graphic.getFontMetrics().stringWidth("Farmed") + 15;
 		int lvlWidth = graphic.getFontMetrics().stringWidth("100") + 15;
@@ -63,10 +63,6 @@ public class LeaderboardImage {
 		graphic.drawString("Lv.",x,y);
 		
 		x = x + lvlWidth;
-		
-		graphic.drawString("Bank", x, y);
-		
-		x = x + amountWidth;
 		
 		graphic.drawString("Peak", x, y);
 		
@@ -110,10 +106,6 @@ public class LeaderboardImage {
 				graphic.drawString(String.valueOf(degen.getLevel()),x,y);
 				
 				x = x + lvlWidth;
-				
-				graphic.drawString(FormattingUtils.format(degen.getBank(),false), x, y);
-				
-				x = x + amountWidth;
 				
 				graphic.drawString(FormattingUtils.format(degen.getPeak(),false), x, y);
 				

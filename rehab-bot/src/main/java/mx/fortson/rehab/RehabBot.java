@@ -38,7 +38,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -88,7 +87,7 @@ public class RehabBot {
 			initChannels();
 			System.out.println("Clearing and restarting services");
 			clearAndRestartServices();
-			
+			System.out.println("Announcing we up");
 			if(isAnnounceUp()) {
 				announceUp();
 			}
@@ -192,10 +191,10 @@ public class RehabBot {
 			TextChannel bidServicesChannel = getOrCreateChannel(ChannelsEnum.BIDSERVICE);
 			TextChannel blindBidServicesChannel = getOrCreateChannel(ChannelsEnum.BLINDBIDSERVICE);
 			TextChannel highLowChannel = getOrCreateChannel(ChannelsEnum.HIGHLOW);
-			purgeChannel(bidServicesChannel);
-			purgeChannel(blindBidServicesChannel);
-			purgeChannel(highLowChannel);
-			purgeChannel(servicesShopChannel);
+			bidServicesChannel = purgeChannel(bidServicesChannel);
+			blindBidServicesChannel = purgeChannel(blindBidServicesChannel);
+			highLowChannel = purgeChannel(highLowChannel);
+			servicesShopChannel = purgeChannel(servicesShopChannel);
 		}
 		
 		Category myServicesCat = getOrCreateCategory(CategoriesEnum.MYSERVICES);
@@ -302,16 +301,11 @@ public class RehabBot {
 		}
 	}
 	
-	private static void purgeChannel(TextChannel channel) {
-		for(int i = 0; i==2;i++) {
-			channel.sendMessage("deleting..").complete();
-		}
-
-		List<Message> history = channel.getHistoryFromBeginning(100).complete().getRetrievedHistory();
-		while(!history.isEmpty()) {
-			channel.purgeMessages(history);
-			history = channel.getHistoryFromBeginning(100).complete().getRetrievedHistory();
-		}
+	private static TextChannel purgeChannel(TextChannel channel) {
+		System.out.println("Copying and deleting " + channel.getName());
+		TextChannel copy = getApi().getGuildById(getGuildId()).createCopyOfChannel(channel).complete();
+		channel.delete().complete();
+		return copy;
 	}
 
 	public static void announceUp() {

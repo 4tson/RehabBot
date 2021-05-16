@@ -9,6 +9,7 @@ import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.util.Pair;
 
 import mx.fortson.rehab.enums.FarmResultEnum;
+import mx.fortson.rehab.enums.SlotsEnum;
 
 public class RandomUtils {
 	
@@ -55,5 +56,13 @@ public class RandomUtils {
 		    itemWeights.add(new Pair<FarmResultEnum, Double>(i, i.getWeight()));
 		}
 		return new EnumeratedDistribution<>(itemWeights).sample();
+    }
+	
+	public static SlotsEnum randomSlotRoll()  {
+		final List<Pair<SlotsEnum, Double>> slotsWeights = new ArrayList<>();
+		for (SlotsEnum i: SlotsEnum.values()) {
+			slotsWeights.add(new Pair<SlotsEnum, Double>(i, i.getWeight()));
+		}
+		return new EnumeratedDistribution<>(slotsWeights).sample();
     }
 }

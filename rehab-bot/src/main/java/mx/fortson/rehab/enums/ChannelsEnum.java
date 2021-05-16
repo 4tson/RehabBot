@@ -2,17 +2,19 @@ package mx.fortson.rehab.enums;
 
 import mx.fortson.rehab.channels.BotCommands;
 import mx.fortson.rehab.channels.DuelArena;
+import mx.fortson.rehab.channels.DupeTradeIn;
 import mx.fortson.rehab.channels.Farms;
 import mx.fortson.rehab.channels.FreeFarms;
 import mx.fortson.rehab.channels.HighLow;
 import mx.fortson.rehab.channels.IChannel;
-import mx.fortson.rehab.channels.DupeTradeIn;
 import mx.fortson.rehab.channels.Services;
 import mx.fortson.rehab.channels.ServicesShop;
 import mx.fortson.rehab.channels.Shop;
+import mx.fortson.rehab.channels.Slots;
 
 public enum ChannelsEnum {
 	HIGHLOW("high-low",CategoriesEnum.GAMBA,new HighLow(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
+	SLOTS("slots",CategoriesEnum.GAMBA,new Slots(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	DUELARENA("duel-arena",CategoriesEnum.GAMBA,new DuelArena(),0, new RolesEnum[]{RolesEnum.DEGEN},new RolesEnum[]{RolesEnum.IRONMAN}),
 	BOTDISCUSSION("bot-discussion",CategoriesEnum.BOT,null,0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),
 	BOTCOMMANDS("bot-commands",CategoriesEnum.BOT,new BotCommands(),0,new RolesEnum[]{RolesEnum.DEGEN,RolesEnum.IRONMAN},new RolesEnum[] {}),

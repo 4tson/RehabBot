@@ -21,6 +21,7 @@ import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
 import mx.fortson.rehab.bean.ServiceBean;
+import mx.fortson.rehab.bean.SlotsRollBean;
 import mx.fortson.rehab.bean.TransactionResultBean;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.enums.ChannelsEnum;
@@ -58,7 +59,7 @@ public class MessageUtils {
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append(userName)
-		.append(" has ")
+		.append(" you have ")
 		.append(FormattingUtils.format(bankBean.getCash()))
 		.append(" available and ")
 		.append(FormattingUtils.format(bankBean.getInventoryWorth()))
@@ -196,15 +197,12 @@ public class MessageUtils {
 			
 			if(!result.isMoreRecords()) {
 				result.setMoreRecords(false);
-				sb.append(" You now have ")
-				.append(FormattingUtils.format(farmCollectionBean.getNewFunds()));
-				
 				if(farmCollectionBean.getNewAttempts()>0) {
-					sb.append(". You have ")
+					sb.append("You have ")
 					.append(farmCollectionBean.getNewAttempts())
 					.append(" attempt(s).");
 				}else {
-					sb.append(". You have run out of attempts.");
+					sb.append("You have run out of attempts.");
 				}
 				
 				result.setMessage(sb.toString());
@@ -588,23 +586,41 @@ public class MessageUtils {
 		return result;
 	}
 
-	public static CharSequence confirmTradeIn(long idLong, int farms) {
+	public static CharSequence confirmTradeIn(long idLong, int farms, int itemId) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<@")
 		.append(idLong)
 		.append("> You will get `")
 		.append(farms)
-		.append("` farm(s) for this item, the hidden multiplier does not apply here. Do you accept? Y/N");
+		.append("` farm(s) for item `")
+		.append(itemId)
+		.append("`, the hidden multiplier does not apply here. Do you accept? Y/N");
 		return sb.toString();
 	}
 
-	public static CharSequence announceTradeIn(Long userId, int farms) {
+	public static CharSequence announceTradeIn(Long userId, int farms, int itemId) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<@")
 		.append(userId)
-		.append("> You have traded your item in, you have been awarded `")
+		.append("> You have traded item `")
+		.append(itemId)
+		.append("` in, you have been awarded `")
 		.append(farms)
 		.append("` farm(s).");
+		return sb.toString();
+	}
+
+	public static CharSequence announceSlotsRoll(SlotsRollBean roll) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<@")
+		.append(roll.getDiscId())
+		.append("> ")
+		.append(roll.getFlavourText());
+		if(roll.isWon()) {
+			sb.append("\nYou won `")
+			.append(roll.getFarmsWon())
+			.append("` farm(s)! Congratulations.");
+		}
 		return sb.toString();
 	}
 }

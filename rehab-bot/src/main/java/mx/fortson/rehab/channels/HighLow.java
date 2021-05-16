@@ -83,8 +83,8 @@ public final class HighLow implements IChannel{
 					RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage(generateNewNumberMessage()).allowedMentions(new ArrayList<>()).queue();
 				}
 			};
-			timer.schedule(highLowTask, 1000L * 30);
-			RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage("Get your bets in, the game will resolve in 30 seconds.").allowedMentions(new ArrayList<>()).queue();
+			timer.schedule(highLowTask, 1000L * 15);
+			RehabBot.getOrCreateChannel(ChannelsEnum.HIGHLOW).sendMessage("Get your bets in, the game will resolve in 15 seconds.").allowedMentions(new ArrayList<>()).queue();
 		}
 	}
 	
@@ -136,16 +136,20 @@ public final class HighLow implements IChannel{
 							FarmUtils.addSetFarmsToUser(author.getIdLong(), -10);
 							playersWins.put(author.getIdLong(), new PlayerWinsBean());
 						}else {
-							channel.sendMessage("<@" + author.getIdLong() + "> You don't have enough farms to play. It costs 10 farms to start.").allowedMentions(new ArrayList<>()).queue();;
+							channel.sendMessage("<@" + author.getIdLong() + "> You don't have enough farms to play. It costs 10 farms to start.").allowedMentions(new ArrayList<>()).queue();
 							return;
 						}
 					}
 					if(playersBets.containsKey(author.getIdLong())) {
 						channel.sendMessage(generateExistingBetMessage(author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 					}else {
-						playersBets.put(author.getIdLong(), true);
-						channel.sendMessage(generateRegisteredBetMessage(author.getIdLong(),true)).allowedMentions(new ArrayList<>()).queue();
-						initTask();
+						if(playersWins.containsKey(author.getIdLong()) && playersWins.get(author.getIdLong()).getCurrentFarms()>=1000) {
+							channel.sendMessage("<@" + author.getIdLong() + "> Congratulations you hit the cap of 1000 farms from high-low, we recommend you `!cashout`.").allowedMentions(new ArrayList<>()).queue();
+						}else {
+							playersBets.put(author.getIdLong(), true);
+							channel.sendMessage(generateRegisteredBetMessage(author.getIdLong(),true)).allowedMentions(new ArrayList<>()).queue();
+							initTask();
+						}
 					}
 					break;
 				case LOW:
@@ -154,16 +158,20 @@ public final class HighLow implements IChannel{
 							FarmUtils.addSetFarmsToUser(author.getIdLong(), -10);
 							playersWins.put(author.getIdLong(), new PlayerWinsBean());
 						}else {
-							channel.sendMessage("<@" + author.getIdLong() + "> You don't have enough farms to play. It costs 10 farms to start.").allowedMentions(new ArrayList<>()).queue();;
+							channel.sendMessage("<@" + author.getIdLong() + "> You don't have enough farms to play. It costs 10 farms to start.").allowedMentions(new ArrayList<>()).queue();
 							return;
 						}
 					}
 					if(playersBets.containsKey(author.getIdLong())) {
 						channel.sendMessage(generateExistingBetMessage(author.getIdLong())).allowedMentions(new ArrayList<>()).queue();
 					}else {
-						playersBets.put(author.getIdLong(), false);
-						channel.sendMessage(generateRegisteredBetMessage(author.getIdLong(),false)).allowedMentions(new ArrayList<>()).queue();
-						initTask();
+						if(playersWins.containsKey(author.getIdLong()) && playersWins.get(author.getIdLong()).getCurrentFarms()>=1000) {
+							channel.sendMessage("<@" + author.getIdLong() + "> Congratulations you hit the cap of 1000 farms from high-low, we recommend you `!cashout`.").allowedMentions(new ArrayList<>()).queue();
+						}else {
+							playersBets.put(author.getIdLong(), false);
+							channel.sendMessage(generateRegisteredBetMessage(author.getIdLong(),false)).allowedMentions(new ArrayList<>()).queue();
+							initTask();
+						}
 					}
 					break;
 				case STATUSHIGHLOW:
