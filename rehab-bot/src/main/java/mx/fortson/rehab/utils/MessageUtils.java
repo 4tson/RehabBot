@@ -589,25 +589,34 @@ public class MessageUtils {
 		return result;
 	}
 
-	public static CharSequence confirmTradeIn(long idLong, int farms, int itemId) {
+	public static CharSequence confirmTradeIn(long idLong, int farms, int itemId, boolean keep) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<@")
 		.append(idLong)
 		.append("> You will get `")
 		.append(farms)
-		.append("` farm(s) for item `")
+		.append("` farm(s) for ")
+		.append("item `")
 		.append(itemId)
-		.append("`, the hidden multiplier does not apply here. Do you accept? Y/N");
+		.append("`");
+		if(keep) {
+			sb.append("'s duplicates");
+		}
+		sb.append(", the hidden multiplier does not apply here. Do you accept? Y/N");
 		return sb.toString();
 	}
 
-	public static CharSequence announceTradeIn(Long userId, int farms, int itemId) {
+	public static CharSequence announceTradeIn(Long userId, int farms, int itemId, boolean keep) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<@")
 		.append(userId)
 		.append("> You have traded item `")
 		.append(itemId)
-		.append("` in, you have been awarded `")
+		.append("`");
+		if(keep) {
+			sb.append("'s duplicates");
+		}
+		sb.append(" in, you have been awarded `")
 		.append(farms)
 		.append("` farm(s).");
 		return sb.toString();

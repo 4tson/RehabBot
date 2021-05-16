@@ -220,16 +220,16 @@ public class ServicesUtils {
 	public static void createNewService(BiddableServiceBean biddableService) {
 		TextChannel servicesChannel = biddableService.getType()==1 ? RehabBot.getOrCreateChannel(ChannelsEnum.BIDSERVICE) : RehabBot.getOrCreateChannel(ChannelsEnum.BLINDBIDSERVICE);
 		servicesChannel.getManager().setSlowmode(0).queue();
-		ServicesUtils.updateBiddableService(biddableService);
+		ServicesUtils.updateBiddableService(biddableService,false);
 		servicesChannel.sendMessage(MessageUtils.announceNewService(biddableService,RehabBot.getOrCreateRole(RolesEnum.SERVICES).getIdLong(),biddableService.getType()==1)).queue();
 		RehabBot.getApi().addEventListener(new ServiceStateMachine(biddableService));
 	}
 	
 
 
-	public static void updateBiddableService(BiddableServiceBean biddableService) {
+	public static void updateBiddableService(BiddableServiceBean biddableService,boolean active) {
 		try {
-			DatabaseDegens.updateBiddable(biddableService);
+			DatabaseDegens.updateBiddable(biddableService,active);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

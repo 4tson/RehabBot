@@ -6,6 +6,7 @@ import java.util.Timer;
 
 import mx.fortson.rehab.DatabaseDegens;
 import mx.fortson.rehab.RehabBot;
+import mx.fortson.rehab.bean.TradeInBean;
 import mx.fortson.rehab.channels.DupeTradeIn;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.tasks.RemoveListenerTask;
@@ -13,7 +14,6 @@ import mx.fortson.rehab.utils.MessageUtils;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class TradeInStateMachine extends ListenerAdapter{
 	
@@ -24,33 +24,38 @@ public class TradeInStateMachine extends ListenerAdapter{
 	
 	private RemoveListenerTask task;
 	private final Timer timer = new Timer("TradeInTimer");
+	private final boolean keep;
 	
-	private Pair<Long, Integer> tradeInPair;
+	private TradeInBean tradeIn;
 
-	public TradeInStateMachine(long idLong, long messageIdLong, int[] idsI) {
+	public TradeInStateMachine(long idLong, long messageIdLong, int[] idsI, boolean keep) {
+		this.keep = keep;
 		this.userId = idLong;
 		this.messageId = messageIdLong;
 		this.itemIds = idsI;
 		this.itemCounter = 0;
 		task = new RemoveListenerTask(this);
 		
-		
 	}
 
 	public void announceTradeIn() {
-		while(null==tradeInPair && itemCounter < itemIds.length) {
-			try {
-				tradeInPair = DatabaseDegens.selectDuplicateItemsAndValue(userId,itemIds[itemCounter]);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			if(tradeInPair!=null) {
-				RehabBot.getOrCreateChannel(ChannelsEnum.DUPETRADEIN).sendMessage(MessageUtils.confirmTradeIn(userId, calculateFarms(),itemIds[itemCounter])).queue();
-				updateTimer();
-			}else {
-				RehabBot.getOrCreateChannel(ChannelsEnum.DUPETRADEIN).sendMessage("<@"+userId + "> You cannot trade in item `" + itemIds[itemCounter] + "`. Only items you own, you have duplicates of, and are not for sale can be traded in.").allowedMentions(new ArrayList<>()).queue();
-				itemCounter++;
-			}
+		while(null==tradeIn && itemCounter < itemIds.length) {
+				try {
+					if(!keep) {
+						tradeIn = DatabaseDegens.selectDuplicateItemsAndValue(userId,itemIds[itemCounter]);
+					}else {
+						tradeIn = DatabaseDegens.selectOthers(userId, itemIds[itemCounter]);
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				if(tradeIn!=null) {
+					RehabBot.getOrCreateChannel(ChannelsEnum.DUPETRADEIN).sendMessage(MessageUtils.confirmTradeIn(userId, calculateFarms(),itemIds[itemCounter],keep)).queue();
+					updateTimer();
+				}else {
+					RehabBot.getOrCreateChannel(ChannelsEnum.DUPETRADEIN).sendMessage("<@"+userId + "> You cannot trade in item `" + itemIds[itemCounter] + "`. Only items you own, you have duplicates of, and are not for sale can be traded in.").allowedMentions(new ArrayList<>()).queue();
+					itemCounter++;
+				}
 		}
 		if(itemCounter==itemIds.length) {
 			RehabBot.getOrCreateChannel(ChannelsEnum.DUPETRADEIN).sendMessage("<@"+userId + ">That was the last of your requested tradeins.").queue();
@@ -73,14 +78,14 @@ public class TradeInStateMachine extends ListenerAdapter{
 	        if(content.equalsIgnoreCase("Y")) {
 	        	boolean result = tradeInItem();
 	        	if(result) {
-	        		channel.sendMessage(MessageUtils.announceTradeIn(userId, calculateFarms(),itemIds[itemCounter])).allowedMentions(new ArrayList<>()).complete();
+	        		channel.sendMessage(MessageUtils.announceTradeIn(userId, calculateFarms(),itemIds[itemCounter],keep)).allowedMentions(new ArrayList<>()).complete();
 	        	}else {
 	        		channel.sendMessage("<@"+userId+"> There was an issue trading in your item.").queue();
 	        	}
 	        }else {
 	        	channel.sendMessage("<@" + userId +  "> Trade in request cancelled.").allowedMentions(new ArrayList<>()).queue();
 	        }
-	        tradeInPair = null;
+	        tradeIn = null;
 	        updateTimer();
 	        itemCounter++;
 	        announceTradeIn();
@@ -99,11 +104,20 @@ public class TradeInStateMachine extends ListenerAdapter{
 	
 	private boolean tradeInItem() {
 		try {
-			tradeInPair = DatabaseDegens.selectDuplicateItemsAndValue(userId,itemIds[itemCounter]);
-			if(tradeInPair!=null) {
-				DatabaseDegens.deleteItem(itemIds[itemCounter]);
-				DatabaseDegens.addFarmAtt(calculateFarms(), DatabaseDegens.getDegenId(userId));
-				return true;
+			if(!keep) {
+				tradeIn = DatabaseDegens.selectDuplicateItemsAndValue(userId,itemIds[itemCounter]);
+				if(tradeIn!=null) {
+					DatabaseDegens.deleteItem(itemIds[itemCounter]);
+					DatabaseDegens.addFarmAtt(calculateFarms(), DatabaseDegens.getDegenId(userId));
+					return true;
+				}
+			}else {
+				tradeIn = DatabaseDegens.selectOthers(userId, itemIds[itemCounter]);
+				if(tradeIn!=null) {
+					DatabaseDegens.deleteOthers(itemIds[itemCounter],userId);
+					DatabaseDegens.addFarmAtt(calculateFarms(), DatabaseDegens.getDegenId(userId));
+					return true;
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -112,14 +126,14 @@ public class TradeInStateMachine extends ListenerAdapter{
 	}
 
 	private int calculateFarms() {
-		if(tradeInPair.getRight()==1) {
-			return 10 + Math.toIntExact(tradeInPair.getLeft()/1000000L);	
+		if(tradeIn.getType()==1) {
+			return (10 * tradeIn.getItemCount()) + Math.toIntExact(tradeIn.getValue()/1000000L);	
 		}
-		if(tradeInPair.getRight()==2) {
-			return 20 + Math.toIntExact(tradeInPair.getLeft()/10000000L);
+		if(tradeIn.getType()==2) {
+			return (20 * tradeIn.getItemCount()) + Math.toIntExact(tradeIn.getValue()/10000000L);
 		}
-		if(tradeInPair.getRight()==3) {
-			return 900 + Math.toIntExact(tradeInPair.getLeft()/50000000L);
+		if(tradeIn.getType()==3) {
+			return (900 * tradeIn.getItemCount()) + Math.toIntExact(tradeIn.getValue()/50000000L);
 		}
 		return 0;
 	}

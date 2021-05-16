@@ -17,10 +17,10 @@ import mx.fortson.rehab.bean.LevelBean;
 import mx.fortson.rehab.bean.PlayerWinsBean;
 import mx.fortson.rehab.bean.ServiceBean;
 import mx.fortson.rehab.bean.SlotsRollBean;
+import mx.fortson.rehab.bean.TradeInBean;
 import mx.fortson.rehab.constants.DBQueriesConstants;
 import mx.fortson.rehab.constants.RehabBotConstants;
 import mx.fortson.rehab.database.DegensDataSource;
-import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class DatabaseDegens {
 	
@@ -617,7 +617,7 @@ public class DatabaseDegens {
 		return 0;
 	}
 
-	public static void updateBiddable(BiddableServiceBean biddableService) throws SQLException {
+	public static void updateBiddable(BiddableServiceBean biddableService,boolean active) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.UPDATE_BIDDABLE_SERVICE)){
 			stmt.setInt(1, biddableService.getFarms());
@@ -626,7 +626,8 @@ public class DatabaseDegens {
 			stmt.setInt(4, biddableService.getIntervalMinutes());
 			stmt.setInt(5, getDegenId(biddableService.getWinnerID()));
 			stmt.setLong(6, biddableService.getBid());
-			stmt.setInt(7, biddableService.getType());
+			stmt.setBoolean(7, active);
+			stmt.setInt(8, biddableService.getType());
 			stmt.executeUpdate();
 		}
 	}
@@ -820,7 +821,7 @@ public class DatabaseDegens {
 		return 1.00;
 	}
 
-	public static Pair<Long, Integer> selectDuplicateItemsAndValue(long idLong, int itemid) throws SQLException {
+	public static TradeInBean selectDuplicateItemsAndValue(long idLong, int itemid) throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_DUPE_COUNT_VAL)){
 			stmt.setInt(1, itemid);
@@ -830,7 +831,7 @@ public class DatabaseDegens {
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
 				if(rs.getInt(1)>1) {
-					return Pair.of(rs.getLong(2), rs.getInt(3));	
+					return new TradeInBean(1,rs.getLong(2), rs.getInt(3));	
 				}
 			}
 		}
@@ -891,6 +892,34 @@ public class DatabaseDegens {
 	public static void addToJackpot() throws SQLException {
 		try(Connection con = DegensDataSource.getConnection();
 				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.ADD_TO_JACKPOT)){
+			stmt.executeUpdate();
+		}
+	}
+
+	public static TradeInBean selectOthers(Long userId, int itemid) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.SELECT_DUPES_VALUE_SUM)){
+			stmt.setInt(1, itemid);
+			stmt.setLong(2, userId);
+			stmt.setLong(3, userId);
+			stmt.setInt(4, itemid);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				if(rs.getInt(1)>1) {
+					return new TradeInBean(rs.getInt(1),rs.getLong(2), rs.getInt(3));	
+				}
+			}
+		}
+		return null;
+	}
+
+	public static void deleteOthers(int itemId, long userId) throws SQLException {
+		try(Connection con = DegensDataSource.getConnection();
+				PreparedStatement stmt = con.prepareStatement(DBQueriesConstants.DELETE_OTHER_ITEMS)){
+			stmt.setInt(1, itemId);
+			stmt.setLong(2, userId);
+			stmt.setLong(3, userId);
+			stmt.setInt(4, itemId);
 			stmt.executeUpdate();
 		}
 	}

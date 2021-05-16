@@ -71,7 +71,7 @@ public class ServiceStateMachine extends ListenerAdapter{
 				
 				//We announce that the bid is over
 				channel.sendMessage(MessageUtils.announceBidEnd(biddableService)).queue();
-				ServicesUtils.updateBiddableService(biddableService);
+				ServicesUtils.updateBiddableService(biddableService,true);
 				bidTask.cancel();
 				removeListener();
 			}

@@ -3,6 +3,8 @@ package mx.fortson.rehab.channels;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import mx.fortson.rehab.RehabBot;
 import mx.fortson.rehab.enums.ChannelsEnum;
 import mx.fortson.rehab.enums.RehabCommandsEnum;
@@ -26,9 +28,9 @@ public class DupeTradeIn implements IChannel{
 			User author = event.getAuthor();
 			RehabCommandsEnum commandEnum = RehabCommandsEnum.fromCommand(messageContent, ChannelsEnum.DUPETRADEIN);
 			if(null!=commandEnum) {
+				String[] contentSplit = messageContent.split(" ");
 				switch(commandEnum) {
 				case TRADEINDUPE:
-					String[] contentSplit = messageContent.split(" ");
 					if(contentSplit.length>=2 && contentSplit[1].matches("^([1-9][0-9]*,)*[1-9][0-9]*")) {
 						String[] idsS = contentSplit[1].split(",");
 						int[] idsI = new int[idsS.length];
@@ -36,7 +38,16 @@ public class DupeTradeIn implements IChannel{
 							idsI[i] = Integer.parseInt(idsS[i]);
 						}
 						activeTradeins.add(author.getIdLong());
-						TradeInStateMachine tism = new TradeInStateMachine(author.getIdLong(), event.getMessageIdLong(),idsI);
+						TradeInStateMachine tism = new TradeInStateMachine(author.getIdLong(), event.getMessageIdLong(),idsI,false);
+						RehabBot.getApi().addEventListener(tism);
+						tism.announceTradeIn();
+					}
+					break;
+				case KEEPDUPE:
+					if(contentSplit.length>=2 && StringUtils.isNumeric(contentSplit[1])) {
+						int idI = Integer.parseInt(contentSplit[1]);
+						activeTradeins.add(author.getIdLong());
+						TradeInStateMachine tism = new TradeInStateMachine(author.getIdLong(), event.getMessageIdLong(),new int[] {idI},true);
 						RehabBot.getApi().addEventListener(tism);
 						tism.announceTradeIn();
 					}

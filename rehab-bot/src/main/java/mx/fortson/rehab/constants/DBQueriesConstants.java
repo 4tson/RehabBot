@@ -88,13 +88,13 @@ public class DBQueriesConstants {
 	
 	public static final String DELETE_HIGHLOWSTATE = "delete from highlowstate";
 	
-	public static final String UPDATE_SERVICE_LENGTH = "update services set lengthhours = ? where serviceid = ?";
+	public static final String UPDATE_SERVICE_LENGTH = "update services set lengthhours = ?, active = true where serviceid = ?";
 	
 	public static final String SELECT_BIDDABLE_SERVICE = "select s.serviceid, s.farms, s.lengthhours, s.name, s.rateminutes, s.forsale, s.active, s.degenid, d.discordid, s.price, d.name from services s, degens d where d.degenid = s.degenid and s.type = ?";
 	
 	public static final String GET_BIDDABLE_SERVICE_ID = "select serviceid from services where type = ?";
 	
-	public static final String UPDATE_BIDDABLE_SERVICE = "update services set farms = ?, lengthhours = ?, name = ?, rateminutes = ?, degenid = ?, price = ? ,active = true where type = ?";
+	public static final String UPDATE_BIDDABLE_SERVICE = "update services set farms = ?, lengthhours = ?, name = ?, rateminutes = ?, degenid = ?, price = ? ,active = ? where type = ?";
 	
 	public static final String UPDATE_BIDDABLE_SERVICE_ACTIVE = "update services set active = false where type = 1";
 	
@@ -139,4 +139,22 @@ public class DBQueriesConstants {
 	public static final String RESET_JACKPOT = "update slots set payout = (select prop_value from properties where prop_key = 'JACKPOT') where name = 'Jackpot'";
 	
 	public static final String ADD_TO_JACKPOT = "update slots set payout = payout + 1 where name = 'Jackpot'";
+	
+	public static final String SELECT_DUPES_VALUE_SUM = "select count(1),sum(s.value),i.type from shop s, items i  where \r\n"
+			+ "s.item = (select item from shop where shopid = ? and degenid = (select degenid from degens where discordid = ? ) and forsale = false)\r\n"
+			+ "and degenid = (select degenid from degens where discordid = ? ) \r\n"
+			+ "and shopid <> ? \r\n"
+			+ "and i.itemid = s.item \r\n"
+			+ "and s.forsale = false";
+	
+	public static final String DELETE_OTHER_ITEMS = "delete from shop\r\n"
+			+ "where shopid in (\r\n"
+			+ "select shopid from(\r\n"
+			+ "	select shopid from shop s, items i where \r\n"
+			+ "	s.item = (select item from shop where shopid = ? and degenid = (select degenid from degens where discordid = ? ) and forsale = false)\r\n"
+			+ "	and degenid = (select degenid from degens where discordid = ? ) \r\n"
+			+ "	and shopid <> ? \r\n"
+			+ "	and i.itemid = s.item \r\n"
+			+ "	and s.forsale = false) as c\r\n"
+			+ ")";
 }
