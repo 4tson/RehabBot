@@ -19,6 +19,7 @@ import mx.fortson.rehab.bean.FarmResultBean;
 import mx.fortson.rehab.bean.ItemBean;
 import mx.fortson.rehab.bean.LevelBean;
 import mx.fortson.rehab.bean.LevelUpResultBean;
+import mx.fortson.rehab.bean.MessageUtilsResultBean;
 import mx.fortson.rehab.bean.PagedImageMessageBean;
 import mx.fortson.rehab.bean.PagedMessageBean;
 import mx.fortson.rehab.bean.PredeterminedServiceSaleBean;
@@ -622,18 +623,29 @@ public class MessageUtils {
 		return sb.toString();
 	}
 
-	public static CharSequence announceSlotsRoll(SlotsResultBean roll) {
+	public static MessageUtilsResultBean announceSlotsRoll(SlotsResultBean roll) {
+		MessageUtilsResultBean result = new MessageUtilsResultBean();
 		StringBuilder sb = new StringBuilder();
 		sb.append("<@")
 		.append(roll.getDiscId())
-		.append("> ")
-		.append(roll.getFlavourText());
+		.append("> ");
+		if(roll.isJackpot()) {
+			sb.append("<@&")
+			.append(RehabBot.getOrCreateRole(RolesEnum.JACKPOT).getIdLong())
+			.append("> - ");
+		}
+		sb.append(roll.getFlavourText());
 		if(roll.isWon()) {
 			sb.append("\nYou won `")
 			.append(roll.getFarmsWon())
 			.append("` farm(s)! Congratulations.");
 		}
-		return sb.toString();
+		if(roll.isJackpot()) {
+			sb.append(" Jackpot! Jackpot! Nicesu");
+			result.setPingList(null);
+		}
+		result.setMessage(sb.toString());
+		return result;
 	}
 
 	public static CharSequence announceJackpot(int currentJackpot) {

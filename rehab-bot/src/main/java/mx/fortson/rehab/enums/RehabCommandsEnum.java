@@ -84,6 +84,10 @@ public enum RehabCommandsEnum {
 	PAYOUTS("!payouts","Show the information for the payouts of each roll.",ChannelsEnum.SLOTS, true),
 	
 	JACKPOT("!jackpot","Displays the current jackpot value.",ChannelsEnum.SLOTS, true),
+	
+	ADDROLESSLOTS("!addrole","Adds the `jackpot` role, this means you will get pinged when someone hits the jackpot",ChannelsEnum.SLOTS, true),
+	
+	REMROLESLOTS("!remrole","Removes the `jackpot` role, this means you wont get pinged when someone hits the jackpot",ChannelsEnum.SLOTS, true),
 	;
 	
 	

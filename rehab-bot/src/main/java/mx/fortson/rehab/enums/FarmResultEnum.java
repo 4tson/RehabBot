@@ -11,7 +11,7 @@ public enum FarmResultEnum {
 			"You bought a couple of bonds for `{amount}`, no shame in it."
 			}, 
 			new Long[]{1000000L,2500000L},
-			0.585,
+			0.59,
 			FarmTypeEnum.CASH),
 	CLUE_GOOD(new String[]{
 			"You completed a Hard clue for `{amount}`",
@@ -78,7 +78,7 @@ public enum FarmResultEnum {
 			"The possibilities are endless."
 			}, 
 			new Long[]{73L,73L},
-			0.0009,
+			0.0004,
 			FarmTypeEnum.SERVICE),
 	;
 	

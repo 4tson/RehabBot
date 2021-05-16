@@ -6,6 +6,14 @@ public class SlotsResultBean {
 	private boolean won;
 	private String flavourText;
 	private int farmsWon;
+	private boolean jackpot;
+	
+	public boolean isJackpot() {
+		return jackpot;
+	}
+	public void setJackpot(boolean jackpot) {
+		this.jackpot = jackpot;
+	}
 	public long getDiscId() {
 		return discId;
 	}

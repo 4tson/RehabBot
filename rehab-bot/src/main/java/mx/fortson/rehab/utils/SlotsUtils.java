@@ -28,8 +28,10 @@ public class SlotsUtils {
 				if(isWin(rollResult)) {
 					result.setWon(true);
 					result.setFarmsWon(rollResult[0].getPayout());
+					boolean isJackpot = rollResult[0].getName().equalsIgnoreCase("Jackpot");
+					result.setJackpot(isJackpot);
 					FarmUtils.addSetFarmsToUser(idLong, rollResult[0].getPayout());
-					if(rollResult[0].getName().equalsIgnoreCase("Jackpot")) {
+					if(isJackpot) {
 						resetJackpot();
 					}else {
 						addToJackpot();

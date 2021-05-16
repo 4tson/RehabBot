@@ -62,9 +62,10 @@ public class FarmUtils {
 							String serviceName = RandomUtils.randomStringFromArray(farmResult.getType().getPossibleItems());
 							
 							int maxFarms = serviceLevel > 40 ? 12 : serviceLevel > 30 ? 10 : serviceLevel > 18 ? 9 : serviceLevel > 12 ? 8 : serviceLevel > 8 ? 7 : serviceLevel > 4 ? 6 : serviceLevel > 2 ? 5 : 4;
-							int farmsFarmed = RandomUtils.randomInt(maxFarms);
+							int farmsLowerBound = 2;
+							int farmsFarmed = RandomUtils.randomInt(maxFarms-farmsLowerBound) + farmsLowerBound;
 							double rateHour = Double.parseDouble(String.format("%.1f",RandomUtils.randomDouble(1.0, maxFarms * .5)));
-							int intervalLowerBound = serviceLevel > 30 ? 1 : serviceLevel > 20 ? 2 : serviceLevel > 10 ? 3 : 4;  
+							int intervalLowerBound = serviceLevel > 30 ? 0 : serviceLevel > 20 ? 1 : serviceLevel > 10 ? 2 : 3;  
 							int interval = RandomUtils.randomInt(6 - intervalLowerBound) + intervalLowerBound;
 							
 							farmResultBean.setName(serviceName);

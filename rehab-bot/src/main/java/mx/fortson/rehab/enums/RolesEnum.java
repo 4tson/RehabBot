@@ -9,6 +9,7 @@ public enum RolesEnum {
 	SERVICES("services"),
 	SHOPPER("shopper"),
 	UNIQUES("uniques"),
+	JACKPOT("jackpot"),
 	;
 	private String name;
 
